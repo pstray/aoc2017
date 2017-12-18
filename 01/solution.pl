@@ -22,4 +22,14 @@ for my $digit (@input) {
     $prev = $digit;
 }
 
+my $half = @input/2;
+my $half_sum = 0;
+for my $pos (0..$half) {
+    if ($input[$pos] == $input[$pos+$half]) {
+	$half_sum += $input[$pos];
+    }
+}
+$half_sum *= 2; # since the list is circular
+
 printf "Solution 1: %d\n", $sum;
+printf "Solution 2: %d\n", $half_sum;
