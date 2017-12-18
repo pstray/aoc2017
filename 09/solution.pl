@@ -4,7 +4,7 @@ use strict;
 
 @ARGV = qw(input) unless @ARGV;
 
-my $input = do { $/ = undef; <>; };
+my $input = do { local $/ = undef; <>; };
 
 my $garbage = 0;
 for ($input) {
