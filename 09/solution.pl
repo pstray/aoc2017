@@ -6,9 +6,10 @@ use strict;
 
 my $input = do { $/ = undef; <>; };
 
+my $garbage = 0;
 for ($input) {
     s/!.//g;
-    s/<[^>]*>//g;
+    s/<([^>]*)>/$garbage += length $1;""/ge;
 }
 
 my $sum = 0;
@@ -26,4 +27,5 @@ if ($level) {
     die "Not balanced! $level off\n";
 }
 
-printf "Solution: %d\n", $sum;
+printf "Part 1: %d\n", $sum;
+printf "Part 2: %d\n", $garbage;
