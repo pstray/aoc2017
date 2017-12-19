@@ -20,3 +20,15 @@ for my $val (1 .. 2017) {
 
 printf "Solution 1: %s\n", join " ",
   map { $_ ? $buffer[$pos+$_] : "($buffer[$pos])" } -3 .. 3;
+
+my $buf_size = 1;
+my $after_null;
+
+for my $val (1 .. 50000000) {
+    $pos = ($pos + $input) % $buf_size;
+    $pos++;
+    $buf_size++;
+    $after_null = $val if $pos == 1;
+}
+
+printf "Solution 2: %s\n", $after_null;
