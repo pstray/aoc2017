@@ -11,6 +11,7 @@ while (<>) {
 }
 
 my $letters = "";
+my $steps = 0;
 my $pos_y = 0;
 my $pos_x = index join("", @{$diagram[$pos_y]}), '|';
 
@@ -57,7 +58,9 @@ while (1) {
     }
     $pos_x += $dir_x;
     $pos_y += $dir_y;
+    $steps++;
 }
 
 printf "Solution 1: [%d,%d] %s\n", $pos_x, $pos_y, $letters;
+printf "Solution 2: %d\n", $steps;
 
