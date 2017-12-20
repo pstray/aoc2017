@@ -7,7 +7,7 @@ use strict;
 my @banks = split " ", do { local $/ = undef; <> };
 
 my %seen;
-$seen{"@banks"} = 1;
+$seen{"@banks"} = 0;
 my $cycles = 0;
 
 while (1) {
@@ -22,7 +22,9 @@ while (1) {
 	$banks[++$pos%@banks]++;
     }
     # printf "\n";
-    last if $seen{"@banks"}++;
+    last if exists $seen{"@banks"};
+    $seen{"@banks"} = $cycles;
 }
 
 printf "Solution 1: %d cycles\n", $cycles;
+printf "Solution 2: %d inter-cycles\n", $cycles-$seen{"@banks"};
