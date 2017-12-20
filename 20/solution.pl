@@ -14,15 +14,15 @@ while (<>) {
     push @particles, $p;
 }
 
-for my $iter (1 .. 1000) {
+for my $iter (1 .. 400) {
     my %pos_cache;
     for my $p (@particles) {
-	next if $p->{dead};
 	for (0..2) {
 	    $p->{v}[$_] += $p->{a}[$_];
 	    $p->{p}[$_] += $p->{v}[$_];
 	}
-	push @{$pos_cache{$p->{p}[0],$p->{p}[1],$p->{p}[2]}}, $p;
+	push @{$pos_cache{$p->{p}[0],$p->{p}[1],$p->{p}[2]}}, $p
+	  unless $p->{dead};
     }
     for my $pos (values %pos_cache) {
 	next unless @$pos > 1;
