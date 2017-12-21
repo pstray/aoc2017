@@ -44,3 +44,26 @@ for my $n (0 .. 127) {
 }
 
 printf "Solution 1: %d in use\n", $in_use;
+
+sub mark_region {
+    my($x,$y) = @_;
+
+    return 0 unless substr($grid[$y],$x,1) eq '#';
+    substr $grid[$y], $x, 1, 'X';
+
+    mark_region($x+1,$y) if $x < 128;
+    mark_region($x-1,$y) if $x > 0;
+    mark_region($x,$y+1) if $y < 128;
+    mark_region($x,$y-1) if $y > 0;
+
+    return 1;
+}
+
+my $regions = 0;
+for my $y (0 .. 127) {
+    for my $x (0 .. 127) {
+	$regions += mark_region($x,$y);
+    }
+}
+
+printf "Solution 2: %d regions\n", $regions;
