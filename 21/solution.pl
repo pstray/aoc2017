@@ -19,20 +19,20 @@ while (<>) {
 	# 0 1
 	# 2 3
 	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(0 1 2 3)]} = $block; # 0
-	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 0 3 2)]} = $block; # flip |
-	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 3 0 1)]} = $block; # flip -
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 0 3 2)]} = $block; # 0 |
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 3 0 1)]} = $block; # 0 -
 
-	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 3 0 2)]} = $block; # 90 ccw
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(3 1 0 2)]} = $block; # flip |
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(0 2 1 3)]} = $block; # flip -
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 3 0 2)]} = $block; # 90-
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(3 1 2 0)]} = $block; # 90- |
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(0 2 1 3)]} = $block; # 90- -
 
 	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(3 2 1 0)]} = $block; # 180 
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 3 0 1)]} = $block; # flip |
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 0 3 2)]} = $block; # flip -
+#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 3 0 1)]} = $block; # 180 |
+#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(1 0 3 2)]} = $block; # 180 -
 
-	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 0 3 1)]} = $block; # 90 cw
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(0 2 1 3)]} = $block; # flip |
-#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(3 1 2 0)]} = $block; # flip -
+	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(2 0 3 1)]} = $block; # 90+
+#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(0 2 1 3)]} = $block; # 90+ |
+#	$rules{2}{sprintf "%s%s/%s%s", @rule[qw(3 1 2 0)]} = $block; # 90+ -
 
     }
     elsif (my @rule = m,^(.)(.)(.)/(.)(.)(.)/(.)(.)(.) => (....)/(....)/(....)/(....)$,) {
@@ -42,20 +42,20 @@ while (<>) {
 	# 3 4 5
 	# 6 7 8
 	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(0 1 2 3 4 5 6 7 8)]} = $block; # 0
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 1 0 5 4 3 8 7 6)]} = $block; # flip |
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 7 8 3 4 5 0 1 2)]} = $block; # flip -
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 1 0 5 4 3 8 7 6)]} = $block; # 0 |
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 7 8 3 4 5 0 1 2)]} = $block; # 0 -
 
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 5 8 1 4 7 0 3 6)]} = $block; # 90 ccw
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(8 5 2 7 4 1 6 3 0)]} = $block; # flip |
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(0 3 6 1 4 7 2 5 8)]} = $block; # flip -
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 5 8 1 4 7 0 3 6)]} = $block; # 90-
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(8 5 2 7 4 1 6 3 0)]} = $block; # 90- |
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(0 3 6 1 4 7 2 5 8)]} = $block; # 90- -
 
 	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(8 7 6 5 4 3 2 1 0)]} = $block; # 180
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 7 8 3 4 5 0 1 2)]} = $block; # |
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 1 0 5 4 3 8 7 6)]} = $block; # -
+#	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 7 8 3 4 5 0 1 2)]} = $block; # 180 |
+#	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(2 1 0 5 4 3 8 7 6)]} = $block; # 180 -
 
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 3 0 7 4 1 8 5 2)]} = $block; # 90 cw
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(0 3 6 1 4 7 2 5 8)]} = $block; # |
-	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(8 5 2 7 4 1 6 3 0)]} = $block; # -
+	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(6 3 0 7 4 1 8 5 2)]} = $block; # 90+
+#	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(0 3 6 1 4 7 2 5 8)]} = $block; # 90+ |
+#	$rules{3}{sprintf "%s%s%s/%s%s%s/%s%s%s", @rule[qw(8 5 2 7 4 1 6 3 0)]} = $block; # 90+ -
 	
     }
     else {
