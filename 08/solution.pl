@@ -5,6 +5,7 @@ use strict;
 @ARGV = qw(input) unless @ARGV;
 
 my %reg;
+my $absolute_max_val = 0;
 
 while (<>) {
     chomp;
@@ -39,8 +40,11 @@ while (<>) {
     else {
 	die "Unhandles op [$op]\n";
     }
+    $absolute_max_val = $reg{$reg}
+      if $absolute_max_val < $reg{$reg};
 }
 
 my($max_val) = sort {$b<=>$a} values %reg;
 
 printf "Solution 1: %d\n", $max_val;
+printf "Solution 2: %d\n", $absolute_max_val;
