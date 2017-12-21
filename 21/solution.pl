@@ -63,12 +63,19 @@ while (<>) {
     }
 }
 
-print Data::Dumper->Dump([ \%rules ], [qw(rules)]);
-print Data::Dumper->Dump([ $size, \@art ], [qw(size art)]);
+#print Data::Dumper->Dump([ \%rules ], [qw(rules)]);
+#print Data::Dumper->Dump([ $size, \@art ], [qw(size art)]);
 
-my $iter = 5;
+my @pixels_on;
+
+push @pixels_on, 0;
+for my $line (@art) {
+    $pixels_on[-1] += $line =~ y/#/#/;
+}
+
+my $iter = 18;
 while ($iter-->0) {
-    printf "Doing iteration...\n";
+    #printf "Doing iteration...\n";
     my @new;
     my $blocksize;
     
@@ -101,13 +108,14 @@ while ($iter-->0) {
 
     @art = @new;
 
-    print Data::Dumper->Dump([ \@art, 0+@art ], [qw(art size)]);
-    printf "\n";
+    push @pixels_on, 0;
+    for my $line (@art) {
+	$pixels_on[-1] += $line =~ y/#/#/;
+    }
+
+    #print Data::Dumper->Dump([ \@art, 0+@art ], [qw(art size)]);
+    #printf "\n";
 }
 
-my $pixels_on = 0;
-for my $line (@art) {
-    $pixels_on += $line =~ y/#/#/;
-}
-
-printf "Solution 1: %d pixels are on\n", $pixels_on;
+printf "Solution 1: %d pixels are on\n", $pixels_on[5];
+printf "Solution 2: %d pixels are on\n", $pixels_on[18];
