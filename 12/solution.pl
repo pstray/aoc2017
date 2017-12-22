@@ -32,3 +32,13 @@ sub in_group {
 my $members = in_group(0,\%pipes);
 
 printf "Solution 1: %d members\n", $members;
+
+my $groups = 1;
+
+while (my($next) = keys %pipes) {
+    $groups++;
+    # printf "  group %d: %d members\n", $groups,
+    in_group($next, \%pipes);
+}
+
+printf "Solution 2: %d groups total\n", $groups;
