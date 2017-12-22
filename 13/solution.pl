@@ -12,22 +12,21 @@ my($initial_wall);
 while (<>) {
     chomp;
     if (my($depth,$range) = /^(\d+):\s*(\d+)/) {
-	$initial_wall->{hash}{$depth} = $initial_wall->{array}[$depth] =
+	$initial_wall->[$depth] =
 	  { range => $range,
 	    dir => 1,
 	    pos => 0,
-	    depth => $depth,
 	  };
     }
     else {
 	die "Unhandled input [$_]\n";
     }
 }
-$initial_wall->{levels} = 0+@{$initial_wall->{array}};
 
 sub update_wall {
     my($wall) = @_;
-    for my $w (values %{$wall->{hash}}) {
+    for my $w (@$wall) {
+	next unless $w;
 	$w->{pos} += $w->{dir};
 	if ($w->{pos} == $w->{range}-1 || $w->{pos} == 0) {
 	    $w->{dir} *= -1;
@@ -37,8 +36,8 @@ sub update_wall {
 
 my $wall = clone($initial_wall);
 my $severity = 0;
-for my $depth (0 .. $wall->{levels}) {
-    my $layer = $wall->{array}[$depth];
+for my $depth (0 .. @$wall) {
+    my $layer = $wall->[$depth];
     if ($layer && $layer->{pos} == 0) {
 	$severity += $depth * $layer->{range};
     }
@@ -61,10 +60,10 @@ while (!$done) {
 
     $wall = clone($start_wall);
 
-    for my $depth (0 .. $wall->{levels}) {
+    for my $depth (0 .. @$wall) {
 #	draw_wall(0, $depth);
 
-	my $layer = $wall->{array}[$depth];
+	my $layer = $wall->[$depth];
 	if ($layer) {
 	    if ($layer->{pos} == 0) {
 		#printf "Caught at %d after %d ps delay\n", $depth, $delay;  
