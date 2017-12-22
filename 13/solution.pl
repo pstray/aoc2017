@@ -4,49 +4,30 @@ use strict;
 use Data::Dumper;
 $Data::Dumper::Sortkeys = $Data::Dumper::Indent = 1;
 
+use Clone qw(clone);
+
 @ARGV = qw(input) unless @ARGV;
 
-my(@wall,%wall);
+my($initial_wall);
 while (<>) {
     chomp;
     if (my($depth,$range) = /^(\d+):\s*(\d+)/) {
-	$wall{$depth} = $wall[$depth] =
+	$initial_wall->{hash}{$depth} = $initial_wall->{array}[$depth] =
 	  { range => $range,
 	    dir => 1,
 	    pos => 0,
+	    depth => $depth,
 	  };
     }
     else {
 	die "Unhandled input [$_]\n";
     }
 }
-
-my $severity = 0;
-for my $depth (0 .. @wall) {
-    my $layer = $wall[$depth];
-    if ($layer && $layer->{pos} == 0) {
-	$severity += $depth * $layer->{range};
-    }
-    # update
-    for my $w (values %wall) {
-	$w->{pos} += $w->{dir};
-	if ($w->{pos} == $w->{range}-1 || $w->{pos} == 0) {
-	    $w->{dir} *= -1
-	}
-    }
-}
-
-printf "Solution 1: severity of %s\n", $severity;
-
-sub reset_wall {
-    for (values %wall) {
-	$_->{dir} = 1;
-	$_->{pos} = 0;
-    }
-}
+$initial_wall->{levels} = 0+@{$initial_wall->{array}};
 
 sub update_wall {
-    for my $w (values %wall) {
+    my($wall) = @_;
+    for my $w (values %{$wall->{hash}}) {
 	$w->{pos} += $w->{dir};
 	if ($w->{pos} == $w->{range}-1 || $w->{pos} == 0) {
 	    $w->{dir} *= -1;
@@ -54,38 +35,48 @@ sub update_wall {
     }
 }
 
+my $wall = clone($initial_wall);
+my $severity = 0;
+for my $depth (0 .. $wall->{levels}) {
+    my $layer = $wall->{array}[$depth];
+    if ($layer && $layer->{pos} == 0) {
+	$severity += $depth * $layer->{range};
+    }
+    # update
+    update_wall($wall);
+}
+
+printf "Solution 1: severity of %s\n", $severity;
+
+
 my $done = 0;
 my $delay = 0;
-my $time = 0;
 
 $| = 1;
+
+my $start_wall = clone($initial_wall);
 
 travers:
 while (!$done) {
 
-    reset_wall();
+    $wall = clone($start_wall);
 
-    my $depth = -1;
+    for my $depth (0 .. $wall->{levels}) {
+#	draw_wall(0, $depth);
 
-    printf "Traversing from depth=%d, delay=%d...\n", $depth, $delay;
-
-    while ($depth < @wall) {
-	draw_wall(0, $depth);
-	$time++;
-	$depth++;
-
-	my $layer = $wall[$depth];
+	my $layer = $wall->{array}[$depth];
 	if ($layer) {
 	    if ($layer->{pos} == 0) {
+		#printf "Caught at %d after %d ps delay\n", $depth, $delay;  
 		$delay++;
-		$depth--;
+		update_wall($start_wall);
+		redo travers;
 	    }
 	}
 	
-	draw_wall(0, $depth);
-
-	update_wall();
-
+#	draw_wall(0, $depth);
+	update_wall($wall);
+	
     }
 
     $done++;
@@ -93,6 +84,7 @@ while (!$done) {
 
 printf "Solution 2: delay %d\n", $delay;
 
+__END__
 sub draw_wall {
     my($start, $depth) = @_;
     $start = 0 if $start < 0;
@@ -104,7 +96,7 @@ sub draw_wall {
     print "\n";
     for my $line (0 .. 19) {
 	for my $d ($start .. $start + 15) {
-	    my $w = $wall[$d];
+	    my $w = $wall->[$d];
 	    my $s = " ";
 	    if ($w) {
 		$s = "S" if $w->{pos} == $line;
