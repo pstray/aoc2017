@@ -40,21 +40,16 @@ for my $dir (@path) {
     else {
 	die "unhandled dir [$dir]\n";
     }
+    
 }
 
-my $steps = abs($x_dir);
-
-
-__END__
-
-printf "Solution 1: %d steps\n", $steps;
-
-my $groups = 1;
-
-while (my($next) = keys %pipes) {
-    $groups++;
-    # printf "  group %d: %d members\n", $groups,
-    in_group($next, \%pipes);
+sub dist {
+    my($x,$y) = map { abs } @_;
+    my $dist = $x;
+    if ($y>$x) {
+	$dist += ($y-$x)/2;
+    }
+    $dist;
 }
 
-printf "Solution 2: %d groups total\n", $groups;
+printf "Solution 1: %d steps\n", dist($pos_x,$pos_y);
