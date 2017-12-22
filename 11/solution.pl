@@ -14,6 +14,9 @@ my @path = split ",", $input;
 my $pos_x = 0;
 my $pos_y = 0;
 
+my $max_dist = 0;
+my $dist;
+
 for my $dir (@path) {
     if ($dir eq 'se') {
 	$pos_x++;
@@ -40,6 +43,9 @@ for my $dir (@path) {
     else {
 	die "unhandled dir [$dir]\n";
     }
+
+    $dist = dist($pos_x,$pos_y);
+    $max_dist = $dist if $dist > $max_dist;
     
 }
 
@@ -52,4 +58,5 @@ sub dist {
     $dist;
 }
 
-printf "Solution 1: %d steps\n", dist($pos_x,$pos_y);
+printf "Solution 1: %d steps\n", $dist;
+printf "Solution 2: %d steps max\n", $max_dist;
