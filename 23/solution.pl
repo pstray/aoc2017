@@ -9,10 +9,16 @@ $Data::Dumper::Sortkeys = $Data::Dumper::Indent = 1;
 
 @ARGV = qw(input) unless @ARGV;
 
+my %label;
 my @code;
 while (<>) {
     chomp;
-    push @code, [ split " ", $_ ];
+    s/#.*//;
+    if (s/^(\S*)://) {
+	$label{$1} = 0+@code;
+    }
+    my @op = split " ", $_;
+    push @code, \@op if @op;
 }
 
 my $solution1 = 0;
@@ -25,10 +31,23 @@ sub run_code {
 	my($op,$x,$y) = @{$code->[$ip]};
 	my $inc = 1;
 
-	$y = $reg->{$y} ||= 0 if $y =~ /[^0-9-]/;
+#	print Dumper $reg;
+#	print "$op $x $y\n";
 
+	if (my($label) = $y =~ /@(.*)/) {
+	    unless (exists $label{$label}) {
+		die "undefined label $label\n"; 
+	    }
+	    $y = $label{$label}-$ip;
+	}
+	elsif ($y =~ /[^0-9-]/) {
+	    $y = $reg->{$y} ||= 0;
+	}
 	if ($op eq 'set') {
 	    $reg->{$x} = $y;
+	}
+	elsif ($op eq 'add') {
+	    $reg->{$x} += $y;
 	}
 	elsif ($op eq 'sub') {
 	    $reg->{$x} -= $y;
@@ -37,22 +56,34 @@ sub run_code {
 	    $reg->{$x} *= $y;
 	    $solution1++;
 	}
+	elsif ($op eq 'mod') {
+	    $reg->{$x} %= $y;
+	}
 	elsif ($op eq 'jnz') {
 	    $x = $reg->{$x} ||= 0 if $x =~ /[^0-9-]/;
 	    if ($x != 0) {
 		$inc = $y;
 	    }
 	}
+	elsif ($op eq 'jgz') {
+	    $x = $reg->{$x} ||= 0 if $x =~ /[^0-9-]/;
+	    if ($x>0) {
+		$inc = $y;
+	    }
+	}
 	else {
-	    die "unknown op [$op] $x $y ($code[$ip][2])\n", join " ", $op, $x, $y;
+	    die "unknown op [$op] $x $y ($code->[$ip][2])\n";
 	}
 	$ip += $inc;
     }
-
-    return $reg;
 }
 
 run_code(\@code);
 
 printf "Solution 1: %d\n", $solution1;
 
+my $regs = { a => 1 };
+
+run_code(\@code, $regs);
+
+printf "Solution 2: h=%d\n", $regs->{h};
