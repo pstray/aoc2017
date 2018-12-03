@@ -13,10 +13,10 @@ my %ids;
 while (<>) {
     chomp;
     if (my ($id,$x,$y,$w,$h) = /#(\d+)\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)/) {
+	$ids{$id}++;
 	for my $xx ($x .. $x+$w-1) {
 	    for my $yy ($y .. $y+$h-1) {
 		push @{$data{$xx}{$yy}}, $id;
-		$ids{$id}++;
 	    }
 	}
     }
