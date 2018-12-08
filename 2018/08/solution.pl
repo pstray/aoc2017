@@ -16,7 +16,6 @@ while (<>) {
 
 sub checksum {
     my($data,$index) = @_;
-    #printf "[";
     my $checksum = 0;
     my $value = 0;
     my $childs = $data->[$index++];
@@ -29,17 +28,14 @@ sub checksum {
 	push @childs, $v;
     }
     for (1 .. $metas) {
-	#printf " %d", $data->[$index];
 	my $m = $data->[$index++];
 	$checksum += $m;
 	$value += @childs ? $childs[$m-1] : $m;
     }
-    #printf " ]";
-    return wantarray ? ($checksum,$value,$index) : $checksum;
+    return $checksum, $value, $index;
 }
 
 my($solution1,$solution2) = checksum(\@data,0);
-#printf "\n";
 
 printf "Solution 1: %d\n", $solution1;
 printf "Solution 2: %d\n", $solution2;
