@@ -84,7 +84,7 @@ while (1) {
   forloop:
     for my $y (sort {$a<=>$b} keys %$cart) {
 	for my $x (sort {$a<=>$b} keys %{$cart->{$y}}) {
-	    my $c = $cart->{$y}{$x};
+	    my $c = delete $cart->{$y}{$x};
 	    next unless $c;
 	    my($dx,$dy,$next_turn) = @$c;
 	    printf "loop %d: cart at %d,%d = %d,%d,%d\n",
@@ -93,18 +93,14 @@ while (1) {
 	    my($xx,$yy) = ($x+$dx,$y+$dy);
 	    # printf "  [%1s]->[%1s]\n", $track{$y}{$x}, $track{$yy}{$xx};
 	    if ($cart->{$yy}{$xx} || $ncart->{$yy}{$xx}) {
-		printf "loop %d: Crash at %d, %d\n", $loop, $xx, $yy;
+		printf "loop %d, %d left: Crash at %d, %d\n", $loop, $carts, $xx, $yy;
 		$crash_x = $xx unless defined $crash_x;
 		$crash_y = $yy unless defined $crash_y;
 		delete $cart->{$yy}{$xx};
-		delete $cart->{$y}{$x};
 		delete $ncart->{$yy}{$xx};
 		$carts -= 2;
-		last forloop if $carts < 2;
 		next;
 	    }
-	    $last_x = $x;
-	    $last_y = $y;
 	
 	    if ($track{$yy}{$xx} =~ m,[-|],) {
 		# continue on
@@ -146,9 +142,14 @@ while (1) {
     last if $carts < 2;
 }
 
+for my $y (keys %$cart) {
+    for my $x (keys %{$cart->{$y}}) {
+	$last_x = $x;
+	$last_y = $y;
+    }
+}
+
 printf "\n";
 
 printf "Solution 1: crash at %d,%d\n", $crash_x, $crash_y;
 printf "Solution 2: last at %d,%d\n", $last_x, $last_y;
-
-print Dumper $cart;
