@@ -33,9 +33,10 @@ while (<>) {
 
     my $pos = index $data, $input;
     my $input_len = length $input;
+    my($s1, $s2);
     while ($pos<0) {
-	my $s1 = substr($data,$pos1,1);
-	my $s2 = substr($data,$pos2,1);
+	$s1 = substr($data,$pos1,1);
+	$s2 = substr($data,$pos2,1);
 	$data .= $s1+$s2;
 	$len = length $data;
 	$pos1 = ($pos1+$s1+1) % $len;
