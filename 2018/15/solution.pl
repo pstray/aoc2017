@@ -116,8 +116,8 @@ while (1) {
 	    
 	    local $me->{bg} = 7;
 	    
-	    printf " Unit at %d,%d\n", $mx, $my
-	      unless $ap>3;
+#	    printf " Unit at %d,%d\n", $mx, $my
+#	      unless $ap>3;
 	    
 	    my $targets = grep { $types{$_}>0 } grep { $_ ne $me->{type} } keys %types;
 	    
@@ -164,8 +164,8 @@ while (1) {
 		
 		# anything reachable?
 		if (@targets) {
-		    printf " :: move...\n"
-		      unless $ap>3;
+		    #printf " :: move...\n"
+		    #  unless $ap>3;
 		    
 		    # print_map("reachable", 0,0,$max_x,$max_y,\%map,$state);
 		    my($dist) = sort {$a<=>$b} map { $_->[0] } @targets;
@@ -181,8 +181,8 @@ while (1) {
 		    
 		    $state->{$ty}{$tx} = '+';
 		    
-		    print_map("select",0,0,$max_x,$max_y,\%map,$state)
-		      unless $ap>3;
+		    #print_map("select",0,0,$max_x,$max_y,\%map,$state)
+		    #  unless $ap>3;
 		    
 		    my $path = find_path($tx,$ty,$reach);
 		    
@@ -209,9 +209,11 @@ while (1) {
 		    my($nx,$ny) = @$step;
 		    
 		    $steps->{$ny}{$nx}{color} += 8;
-		    
-		    print_map("move",0,0,$max_x,$max_y,\%map,$steps)
-		      unless $ap>3;
+
+		    unless ($ap>3) {
+			print "\e[H\e[2J";
+			print_map("move $round/$ap",0,0,$max_x,$max_y,\%map,$steps);
+		    }
 		    
 		    die "wtf newpos" if $map{$ny}{$nx};
 		    
@@ -229,8 +231,8 @@ while (1) {
 	    }
 	    
 	    if (@adjecent) {
-		print " :: fight...\n"
-		  unless $ap>3;
+		#print " :: fight...\n"
+		#  unless $ap>3;
 		
 		my($target) =
 		  sort { $a->{hp} <=> $b->{hp} ||
@@ -241,7 +243,7 @@ while (1) {
 		unless ($target->{hp} > 0) {
 		    my $tx = $target->{x};
 		    my $ty = $target->{y};
-		    printf " :: %s dies at %d,%d in round\n", $target->{name}, $tx, $ty, $round+1;
+		    printf " :: %s dies at %d,%d in round %d\n", $target->{name}, $tx, $ty, $round+1;
 		    delete $map{$ty}{$tx};
 		    delete $units{$ty}{$tx};
 		    $types{$target->{type}}--;
@@ -256,13 +258,16 @@ while (1) {
 	}
 	
 	$round++;
-	print_map("state after $round",0,0,$max_x,$max_y,\%map)
-	  unless $ap>3;
+	#unless ($ap>3) {
+	    printf "\e[H\e[2J";
+	    print_map("state after $round/$ap",0,0,$max_x,$max_y,\%map)
+	#}
 	
     }
 
     printf "\n";
 
+    printf "\e[H\e[2J";
     print_map("End of battle",0,0,$max_x,$max_y,\%map);
 
     printf "Battle ended in round %d\n\n", $round;
@@ -362,8 +367,6 @@ sub find_reach {
     find_reach_recurse($x-1,$y  ,$level,$reach,$state,$map);
     find_reach_recurse($x+1,$y  ,$level,$reach,$state,$map);
     find_reach_recurse($x  ,$y+1,$level,$reach,$state,$map);
-
-    # print_map("reach",0,0,$max_x,$max_y,$reach);
 
     return $reach;
 }
