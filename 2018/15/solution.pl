@@ -33,7 +33,7 @@ while (<>) {
     for my $c (split //) {
 	$x++;
 	if ($c eq '#') {
- 	    $init_map{$y}{$x} = $c;
+	    $init_map{$y}{$x} = $c;
 	}
 	elsif ($c eq '.') {
 	    # $init_map{$y}{$x} = $c;
@@ -51,7 +51,7 @@ while (<>) {
 	      };
 	}
 	elsif ($c eq ' ') {
-	    # in case of odd shaped map or 
+	    # in case of odd shaped map or
 	}
 	else {
 	    warn "found $c at $x,$y...\n";
@@ -86,13 +86,13 @@ while (1) {
     }
 
     printf "Running battle with Elf attack power %d\n", $ap;
-    
+
     my $round = 0;
   round:
     while (1) {
 	printf "Round %d\n", $round+1
 	  unless $ap>3;
-	
+
 	my @units;
 	my %types;
 	# find units in play
@@ -110,32 +110,32 @@ while (1) {
 	for my $me (@units) {
 	    # skip if dead;
 	    next unless $me->{hp} > 0;
-	    
+
 	    my $mx = $me->{x};
 	    my $my = $me->{y};
-	    
+
 	    local $me->{bg} = 7;
-	    
+
 #	    printf " Unit at %d,%d\n", $mx, $my
 #	      unless $ap>3;
-	    
+
 	    my $targets = grep { $types{$_}>0 } grep { $_ ne $me->{type} } keys %types;
-	    
+
 	    unless ($targets) {
 		printf " :: no more enemies left\n";
 		last round;
 	    }
-	    
+
 	    # in range?
 	    my @adjecent = find_adjecent($me,\%units);
-	    
+
 	    if (!@adjecent) {
 		# lets move;
-		
+
 		# find enemies
 		my @enemies;
 		my $state;
-		
+
 		for my $u (@units) {
 		    delete $u->{range};
 		    next unless $u->{target} = $u->{type} ne $me->{type};
@@ -147,13 +147,13 @@ while (1) {
 		    $state->{$uy  }{$ux+1} = '?' unless $map{$uy  }{$ux+1};
 		    $state->{$uy+1}{$ux  } = '?' unless $map{$uy+1}{$ux};
 		}
-		
+
 		# print_map("inrange", 0,0,$max_x,$max_y,\%map,$state);
-		
+
 		my $reach = find_reach($me,$state,\%map);
-		
+
 		# print_map("reach",0,0,$max_x,$max_y,\%map,$reach);
-		
+
 		my(@targets);
 		for my $y (sort {$a<=>$b} keys %$state) {
 		    for my $x (sort {$a<=>$b} keys %{$state->{$y}}) {
@@ -161,35 +161,35 @@ while (1) {
 			push @targets, [ $reach->{$y}{$x}, $x, $y ];
 		    }
 		}
-		
+
 		# anything reachable?
 		if (@targets) {
 		    #printf " :: move...\n"
 		    #  unless $ap>3;
-		    
+
 		    # print_map("reachable", 0,0,$max_x,$max_y,\%map,$state);
 		    my($dist) = sort {$a<=>$b} map { $_->[0] } @targets;
-		    
+
 		    # printf " :: closeest at %d steps\n", $dist;
-		    
+
 		    my($target) =
 		      sort { $a->[2] <=> $b->[2] || $a->[1] <=> $b->[1] }
 		      grep { $_->[0] == $dist } @targets;
-		    
+
 		    my $tx = $target->[1];
 		    my $ty = $target->[2];
-		    
+
 		    $state->{$ty}{$tx} = '+';
-		    
+
 		    #print_map("select",0,0,$max_x,$max_y,\%map,$state)
 		    #  unless $ap>3;
-		    
+
 		    my $path = find_path($tx,$ty,$reach);
-		    
+
 		    # print_map("path",0,0,$max_x,$max_y,$path);
-		    
+
 		    my $path_d = $path->{$my}{$mx} - 1;
-		    
+
 		    my(@steps);
 		    my($steps);
 		    for my $y (sort {$a<=>$b} keys %$path) {
@@ -199,46 +199,46 @@ while (1) {
 			    $steps->{$y}{$x} = { map => '*', color => 5 };
 			}
 		    }
-		    
+
 		    my($step) =
 		      sort { $a->[1] <=> $b->[1] || $a->[0] <=> $b->[0] }
 		      @steps;
-		    
+
 		    die "wtf step" unless $step;
-		    
+
 		    my($nx,$ny) = @$step;
-		    
+
 		    $steps->{$ny}{$nx}{color} += 8;
 
 		    unless ($ap>3) {
 			print "\e[H\e[2J";
 			print_map("move $round/$ap",0,0,$max_x,$max_y,\%map,$steps);
 		    }
-		    
+
 		    die "wtf newpos" if $map{$ny}{$nx};
-		    
+
 		    $units{$ny}{$nx} = delete $units{$my}{$mx};
 		    $map{$ny}{$nx} = delete $map{$my}{$mx};
-		    
+
 		    $me->{x} = $nx;
 		    $me->{y} = $ny;
-		    
+
 		    @adjecent = find_adjecent($me,\%units);
-		    
+
 		    # print_map("after move",0,0,$max_x,$max_y,\%map);
-		    
+
 		}
 	    }
-	    
+
 	    if (@adjecent) {
 		#print " :: fight...\n"
 		#  unless $ap>3;
-		
+
 		my($target) =
 		  sort { $a->{hp} <=> $b->{hp} ||
 			 $a->{y} <=> $b->{y} ||
 			 $a->{x} <=> $b->{x} } @adjecent;
-		
+
 		$target->{hp} -= $me->{ap};
 		unless ($target->{hp} > 0) {
 		    my $tx = $target->{x};
@@ -252,17 +252,17 @@ while (1) {
 			next battle;
 		    }
 		}
-		
+
 		# print Dumper $target;
 	    }
 	}
-	
+
 	$round++;
 	#unless ($ap>3) {
 	    printf "\e[H\e[2J";
 	    print_map("state after $round/$ap",0,0,$max_x,$max_y,\%map)
 	#}
-	
+
     }
 
     printf "\n";
@@ -271,7 +271,7 @@ while (1) {
     print_map("End of battle",0,0,$max_x,$max_y,\%map);
 
     printf "Battle ended in round %d\n\n", $round;
-    
+
     my $hp_sum = 0;
     for my $y (sort {$a<=>$b} keys %units) {
 	for my $x (sort {$a<=>$b} keys %{$units{$y}}) {
@@ -344,7 +344,7 @@ sub print_map {
 	    $c = "\e[38;5;${color}m$c" if defined $color;
 	    $c = "\e[48;5;${bg}m$c" if defined $bg;
 	    $c .= "\e[m" if $color || $bg;
-  	    printf("%1s", $c);
+	    printf("%1s", $c);
 	}
 	if (@u) {
 	    printf "   %s",
@@ -354,7 +354,7 @@ sub print_map {
     }
     print "\n";
 }
-  
+
 sub find_reach {
     my($me,$state,$map) = @_;
     my $x = $me->{x};
@@ -398,7 +398,7 @@ sub find_adjecent {
     my $x = $me->{x};
     my $y = $me->{y};
     my @r;
-    
+
     push @r, $units->{$y-1}{$x} if exists $units->{$y-1}{$x};
     push @r, $units->{$y}{$x-1} if exists $units->{$y}{$x-1};
     push @r, $units->{$y}{$x+1} if exists $units->{$y}{$x+1};
