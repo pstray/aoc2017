@@ -8,6 +8,7 @@
 use strict;
 
 use Data::Dumper;
+use Getopt::Long;
 
 $| = 1;
 
@@ -15,6 +16,10 @@ my @map;
 
 my $max_x;
 my $max_y;
+my $animate = 0;
+
+GetOptions( 'a|animate!' => \$animate,
+	  );
 
 while (<>) {
     chomp;
@@ -121,14 +126,16 @@ while ($minute < $max_time) {
     }
     @map = @nmap;
 
-    # printf "After minute %d\n", $minute;
-    # for ($map) {
-    # 	s/(\|+)/\e[38;5;10m$1\e[m/g;
-    # 	s/(\#+)/\e[38;5;214m$1\e[m/g;
-    # 	s/(\.+)/\e[38;5;242m$1\e[m/g;
-    # }
-    # printf $map;
-    # printf "\n";
+    if ($animate) {
+	printf "After minute %d\n", $minute;
+	for ($map) {
+	    s/(\|+)/\e[38;5;10m$1\e[m/g;
+	    s/(\#+)/\e[38;5;214m$1\e[m/g;
+	    s/(\.+)/\e[38;5;242m$1\e[m/g;
+	}
+	printf $map;
+	printf "\n";
+    }
 
     unless ($skipped) {
 	my $seen = $seen{$map};
