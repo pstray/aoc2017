@@ -3,12 +3,13 @@
 #include <string.h>
 
 #define MAX_LINE 1024
+#define MAX_LOOP 1000000000
 
-struct solution_list {
+typedef struct solution_rec {
   char *solution;
   long time;
-  struct solution_list *next;
-};
+  struct solution_rec *next;
+} solution_rec;
 
 int main(int argc, char *argv[]) {
   FILE *input;
@@ -23,12 +24,14 @@ int main(int argc, char *argv[]) {
   long x, y;
   char t;
 
-  struct solution_list *solutions = NULL;
+  solution_rec *solutions = NULL, *s_rec;
 
   long time = 0;
-  long count[256];
+  long count[256], tcount[256];
   long p, pc;
   char *pp;
+
+  long found = -1;
 
   input_name = "input";
   if (argc>1)
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]) {
     int ll;
     ll = strlen(line);
     max_x = ll;
-    
+
     while (data_length + max_x * 3 >= data_size) {
       data_size *= 2;
       data = realloc(data, data_size);
@@ -63,7 +66,7 @@ int main(int argc, char *argv[]) {
 	exit(1);
       }
     }
-    
+
     if (!data_length) {
       memset(data, ' ', ll);
       data[ll-1] = '\n';
@@ -71,32 +74,36 @@ int main(int argc, char *argv[]) {
       max_y = 1;
       data_length = strlen(data);
     }
-    
+
     memcpy(data+data_length, line, data_size-data_length);
     data_length = strlen(data);
     max_y++;
   }
-  
+
   memcpy(data+data_length, data, max_x);
   data_length = strlen(data);
   max_y++;
-  
+
   // printf("[%s] %ld %ld\n", data, max_x, max_y);
 
-  pdata = strdup(data);
-  ndata = strdup(data);
+  ndata = data;
 
-  while (time < 100) {
+  while (time < MAX_LOOP) {
     ++time;
-    printf("After time=%ld\n", time);
+    //printf("After time=%ld\n", time);
 
-    // swap data
-    data = pdata;
     pdata = ndata;
-    ndata = data;;
+    ndata = strdup(pdata);
+    /*
+    // swap data
+      data = pdata;
+      pdata = ndata;
+      ndata = data;
+    */
 
     p = 0;
     pc = max_x+1;
+    tcount['.'] = tcount['|'] = tcount['#'] = 0;
     for (y=1; y<max_y-1; y++) {
       for (x=1; x<max_x-1; x++) {
 	count['.'] = count['|'] = count['#'] = 0;
@@ -123,24 +130,59 @@ int main(int argc, char *argv[]) {
 	  t = '.';
 	}
 	ndata[pc] = t;
+	tcount[t]++;
 
-	printf("%c", t);
+	// printf("%c", t);
 
 	p++;
 	pc++;
       }
 
-      printf("\n");
+      //printf("\n");
 
       p += 2;
       pc += 2;
     }
+
+    if (time == 10) {
+      printf("Solution 1: %ld trees, %ld lumberyards = %ld\n",
+	     tcount['|'], tcount['#'], tcount['|'] * tcount['#']);
+    }
+
+    found = -1;
+    s_rec = solutions;
+    while (s_rec) {
+      if (strcmp(s_rec->solution, ndata)) {
+	s_rec = s_rec->next;
+      }
+      else {
+	found = s_rec->time;
+	break;
+      }
+    }
+
+    if (found >= 0) {
+      long diff, left;
+      diff = time-found;
+      left = MAX_LOOP-time;
+
+      printf("Repeating map found at %ld, seen %ld min ago", time, diff);
+
+      time += diff*(left/diff);
+
+      printf(", skipping ahead to %ld\n", time);
+      solutions = NULL;
+    }
+
+    s_rec = malloc(sizeof(solution_rec));
+    s_rec->next = solutions;
+    s_rec->time = time;
+    s_rec->solution = ndata;
+    solutions = s_rec;
   }
-  
-  
-  
-  
-  
+
+  printf("Solution 2: %ld trees, %ld lumberyards = %ld\n",
+	 tcount['|'], tcount['#'], tcount['|'] * tcount['#']);
 
   return 0;
 }
