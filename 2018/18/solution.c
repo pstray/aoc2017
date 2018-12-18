@@ -4,20 +4,31 @@
 
 #define MAX_LINE 1024
 
+struct solution_list {
+  char *solution;
+  long time;
+  struct solution_list *next;
+};
+
 int main(int argc, char *argv[]) {
   FILE *input;
   char *input_name;
 
-  char *data, *ndata;
+  char *data, *ndata, *pdata;
   long data_size;
   long data_length;
   char line[MAX_LINE];
   long max_x = 0;
   long max_y = 0;
   long x, y;
+  char t;
+
+  struct solution_list *solutions = NULL;
 
   long time = 0;
   long count[256];
+  long p, pc;
+  char *pp;
 
   input_name = "input";
   if (argc>1)
@@ -38,7 +49,7 @@ int main(int argc, char *argv[]) {
   data[0] = '\0';
 
   max_x = 0;
-  line[0] = '*';
+  line[0] = ' ';
   while (fgets(line+1, MAX_LINE-2, input)) {
     int ll;
     ll = strlen(line);
@@ -54,7 +65,7 @@ int main(int argc, char *argv[]) {
     }
     
     if (!data_length) {
-      memset(data, '*', ll);
+      memset(data, ' ', ll);
       data[ll-1] = '\n';
       data[ll] = 0;
       max_y = 1;
@@ -72,23 +83,58 @@ int main(int argc, char *argv[]) {
   
   // printf("[%s] %ld %ld\n", data, max_x, max_y);
 
-  while (time < 10) {
+  pdata = strdup(data);
+  ndata = strdup(data);
 
-    ndata = strdup(data);
+  while (time < 100) {
+    ++time;
+    printf("After time=%ld\n", time);
+
+    // swap data
+    data = pdata;
+    pdata = ndata;
+    ndata = data;;
+
+    p = 0;
+    pc = max_x+1;
     for (y=1; y<max_y-1; y++) {
       for (x=1; x<max_x-1; x++) {
-	count['.'] = 0;
-	printf("%c", data[y*max_x+x]);
+	count['.'] = count['|'] = count['#'] = 0;
+	pp = pdata+p;
+	count[*(pp++)]++;
+	count[*(pp++)]++;
+	count[*(pp++)]++;
+	pp += max_x-3;
+	count[*(pp++)]++;
+	t = *(pp++);
+	count[*(pp++)]++;
+	pp += max_x-3;
+	count[*(pp++)]++;
+	count[*(pp++)]++;
+	count[*(pp++)]++;
+
+	if (t == '.' && count['|']>2) {
+	  t = '|';
+	}
+	else if (t == '|' && count['#']>2) {
+	  t = '#';
+	}
+	else if (t == '#' && (count['#']==0 || count['|']==0)) {
+	  t = '.';
+	}
+	ndata[pc] = t;
+
+	printf("%c", t);
+
+	p++;
+	pc++;
       }
-      printf("]\n");
+
+      printf("\n");
+
+      p += 2;
+      pc += 2;
     }
-
-    free(data);
-    data = ndata;
-
-    break;
-
-
   }
   
   
