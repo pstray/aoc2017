@@ -58,7 +58,7 @@ my %state;
 flow_water(500,0,\%map,\%state);
 
 # print_map("Water flow", $min_x, $min_y, $max_x, $max_y,\%map,\%state);
-save_map("solution", $min_x-5, $min_y, $max_x+5, $max_y, \%map, \%state);
+save_map("answer", $min_x-5, $min_y, $max_x+5, $max_y, \%map, \%state);
 
 my $wet_sand = 0;
 my $water_stored = 0;
