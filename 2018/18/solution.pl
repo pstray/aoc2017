@@ -76,14 +76,14 @@ for my $y (0 .. @map-1) {
 	$ttypes{$map[$y][$x]}++;
     }
 }
-printf "Solution 1: %d wooded and %d lumberards = %d\n",
+printf "Solution 1: %d trees and %d lumberyards = %d\n",
   $ttypes{"|"}, $ttypes{"#"},  $ttypes{"|"} * $ttypes{"#"};
 
 my %seen;
 my $skipped = 0;
 my $max_time = 1000000000;
 while ($minute < $max_time) {
-    my $stable = 1;
+    $minute++;
     my $map = "";
     my @nmap;
     for my $y (0 .. @map-1) {
@@ -114,29 +114,31 @@ while ($minute < $max_time) {
 		$ntype = $types{"#"}>0 && $types{"|"}>0 ? "#" : ".";
 	    }
 	    push @line, $ntype;
-	    $stable = 0 if $ntype ne $type;
 	    $map .= $ntype;
 	}
 	push @nmap, [@line];
 	$map .= "\n";
     }
     @map = @nmap;
-    printf "After minute %d\n", ++$minute;
-    #printf $map;
-    #printf "\n";
 
-    if ($stable) {
-	printf "Stable after $minute minutes\n";
-	last;
-    }
+    # printf "After minute %d\n", $minute;
+    # for ($map) {
+    # 	s/(\|+)/\e[38;5;10m$1\e[m/g;
+    # 	s/(\#+)/\e[38;5;214m$1\e[m/g;
+    # 	s/(\.+)/\e[38;5;242m$1\e[m/g;
+    # }
+    # printf $map;
+    # printf "\n";
+
     unless ($skipped) {
 	my $seen = $seen{$map};
 	if ($seen) {
 	    $skipped = 1;
 	    my $diff = $minute-$seen;
 	    my $left = $max_time-$minute;
+	    printf "At time %d, same seen %d minutes ago", $minute, $diff;
 	    $minute += $diff*int($left/$diff);
-	    printf "Map seen, skipping ahead to %d\n", $minute;
+	    printf ", skipping ahead to %d\n", $minute;
 	}
     }
     $seen{$map} = $minute;
@@ -149,5 +151,5 @@ for my $y (0 .. @map-1) {
     }
 }
 
-printf "Solution 2: %d wooded and %d lumberards after stable state %d = %d\n",
+printf "Solution 2: %d trees and %d lumberyards after state %d = %d\n",
   $ttypes{"|"}, $ttypes{"#"}, $minute, $ttypes{"|"} * $ttypes{"#"};
