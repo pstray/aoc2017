@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
   void (*op)(long *reg, int ra, int rb, int rc);
 
-  long reg[6];
+  long reg[10];
 
   char line[MAX_LINE];
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
       cc = &code[code_length++];
 
       sscanf(par,"%d %d %d", &cc->ra, &cc->rb, &cc->rc);
-      
+
       if (!strcmp(in,"addr")) { cc->op = &i_addr; }
       else if (!strcmp(in,"addi")) { cc->op = &i_addi; }
       else if (!strcmp(in,"mulr")) { cc->op = &i_mulr; }
@@ -153,9 +153,12 @@ int main(int argc, char *argv[]) {
 
   loop = 0;
   while (ip >= 0 && ip < code_length) {
-    printf("%6ld ip=%4ld [%ld]\r", loop++, ip,
-	   reg[0]/*, reg[1], reg[2], reg[3], reg[4], reg[5]*/
-	   );
+    loop++;
+    if (loop % 100000 == 0) {
+      printf("%6ld ip=%4ld [%3ld %3ld %3ld %3ld %3ld %3ld]\r", loop, ip,
+	     reg[0], reg[1], reg[2], reg[3], reg[4], reg[5]
+	     );
+    }
     lip = ip;
     reg[rip] = ip;
     cc = &code[ip];
@@ -166,8 +169,9 @@ int main(int argc, char *argv[]) {
     if (lip == ip) {
     }
   }
+  printf("\n");
 
   printf("Solution 2: register 0 contains %ld\n", reg[0]);
-  
+
   return 0;
 }
