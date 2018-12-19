@@ -4,37 +4,45 @@
 
 int main(int argc, char *argv[]) {
 
-  long var0 = 1;
-  long var1 = 3*22+17;
-  long var2 = 2*2*19*11;
-  long var3;
-  long var4 = 0;
-  long var5 = 0;
+  long reg0;
+  long reg1;
+  long reg2;
+  long reg3;
+  long reg4;
+  long reg5;
 
-  var2 += var1;
 
-  if (var0) {
-    var1 = (27*28+29)*30*14*32;
-    var2 += var1;
-  }
+  for (int i = 0; i < 2; i++) {
+    long loop = 0;
 
-  var0 = 0;
+    reg1 = 3*22+17;
+    reg2 = 2*2*19*11 + reg1;
 
-  printf("var2: %ld\n", var2);
-
-  for (var4 = 1; var4 <= var2; var4++) {
-    for (var5 = 1; var5 <= var2; var5++) {
-      var1 = var4*var5;
-      if (var1 == var2) {
-	printf("Adding %ld (%ld) = %ld\n", var4, var5, var1);
-	var0 += var4;
-      }
-      if (var1 > var2)
-	break;
+    if (i) {
+      reg1 = (27*28+29)*30*14*32;
+      reg2 += reg1;
     }
-  }
 
-  printf("Solution 2: %ld\n", var0);
+    reg0 = 0;
+
+    printf("Running %d: $2 = %ld\n", i+1, reg2);
+
+    for (reg4 = 1; reg4 <= reg2; reg4++) {
+      for (reg5 = 1; reg5 <= reg2; reg5++) {
+	loop++;
+	reg1 = reg4*reg5;
+	if (reg1 == reg2) {
+	  reg0 += reg4;
+	  printf("  Adding %ld (%ld) @%ld = %ld (%ld)\n", reg4, reg5, loop, reg1, reg0);
+	  break;
+	}
+	if (reg1 > reg2)
+	  break;
+      }
+    }
+
+    printf("Solution %d: after loop %ld, $0 = %ld\n", i+1, loop, reg0);
+  }
 
   return 0;
 }
