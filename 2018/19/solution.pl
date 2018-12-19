@@ -12,9 +12,11 @@ use Getopt::Long;
 
 my $part1;
 my $part2;
+my $patch;
 
 GetOptions('1|part1' => \$part1,
 	   '2|part2' => \$part2,
+	   'p|patch' => \$patch,
 	  );
 
 unless ($part1 || $part2) {
@@ -88,16 +90,18 @@ sub run {
 
 	$reg->[$rip]++;
 
-	if ($ip == 1) {
-	    printf "Patching program...\n";
-	    %ip_seen = ();
-	    my @new_code = (
-			    [ gtrr => 2, 1, 7 ],
-			    [ addr => $rip, 7, $rip ],
-			    [ addi => $rip, 4, $rip ],
-			   );
-
-	    splice @$code, 8, 0, @new_code;
+	if ($patch) {
+	    $patch = 0;
+	    if ($ip == 1) {
+		printf "Patching program...\n";
+		%ip_seen = ();
+		my @new_code = (
+				[ gtrr => 2, 1, 7 ],
+				[ addr => $rip, 7, $rip ],
+				[ addi => $rip, 4, $rip ],
+			       );
+		splice @$code, 8, 0, @new_code;
+	    }
 	}
 	#printf "%5d\r", $loop++;
     }
