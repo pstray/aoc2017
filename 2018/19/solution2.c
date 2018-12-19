@@ -27,17 +27,17 @@ int main(int argc, char *argv[]) {
 
     printf("Running %d: $2 = %ld\n", i+1, reg2);
 
-    for (reg4 = 1; reg4 <= reg2; reg4++) {
-      for (reg5 = 1; reg5 <= reg2; reg5++) {
+    for (reg4 = 1; reg4 <= reg2; reg4 +=2) {
+      for (reg5 = /*reg2/reg4|*/1; reg5 <= reg2; reg5 += 2) {
 	loop++;
 	reg1 = reg4*reg5;
+	if (reg1 > reg2)
+	  break;
 	if (reg1 == reg2) {
 	  reg0 += reg4;
 	  printf("  Adding %ld (%ld) @%ld = %ld (%ld)\n", reg4, reg5, loop, reg1, reg0);
 	  break;
 	}
-	if (reg1 > reg2)
-	  break;
       }
     }
 
