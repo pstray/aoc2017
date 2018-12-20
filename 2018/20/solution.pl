@@ -22,7 +22,12 @@ draw_map($map, $x_min, $x_max, $y_min, $y_max);
 exit;
 
 sub generate_map_recurse {
-    my($re,$pos,$x,$y,$map) = @_;
+    my($re,$plist,$map) = @_;
+
+    my($pos,$x,$y) =  
+    my $sx = $x;
+    my $sy = $y;
+    my @epos;
 
     while ($pos < @$re) {
 	my $c = $re->[$pos++];
@@ -66,10 +71,21 @@ sub generate_map_recurse {
 	    $map->{$y+1}{$x-3}   = '#';
 	    $x -= 2;
 	}
-
+	elsif ($c eq '(') {
+	    my $r = generate_map_recurse($re, $x, $y, $map);
+	    print Dumper $r;
+	}
+	elsif ($c eq '|') {
+	    push @epos, [ $x, $y ];
+	    $x = $sx;
+	    $y = $sy;
+	}
+	elsif ($c eq ')') {
+	    last;
+	}
     }
-
-    
+    push @epos, [ $x, $y ];
+    return \@epos;
 }
 
 sub generate_map {
@@ -87,7 +103,7 @@ sub generate_map {
     $map->{$cy+1}{$cx-1} = '#';
     $map->{$cy+1}{$cx  } = '?';
     $map->{$cy+1}{$cx+1} = '#';
-    generate_map_recurse([split //, $re],0,$cx,$cy,$map);
+    generate_map_recurse([split //, $re],[0,$cx,$cy],$map);
 
     for my $y (keys %$map) {
 	$y_min = $y if $y < $y_min;
