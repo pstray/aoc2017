@@ -47,7 +47,7 @@ while (<>) {
 		die "Unparsable options:$.: $_\n";
 	    }
 	}
-	print Dumper $group;
+	# print Dumper $group;
     }
     elsif (/^\s*$/) {
 	# nothing
@@ -59,10 +59,14 @@ while (<>) {
 
 my $boost_army = "Immune System";
 my $boost = 0;
+my $boost_n = 1;
 my $boost_low = 0;
-my $boost_high = 1;
+my $boost_high = $boost_n-1;
 
+$| = 1;
 while (1) {
+
+    $boost = int(($boost_low+$boost_high)/2);
 
     for my $g (values %groups) {
 	for my $k (keys %{$g->{orig}}) {
@@ -75,7 +79,8 @@ while (1) {
     my $round;
     my %alive;
     while (1) {
-	printf "==== Round %d (boost %d) ====\n\n", ++$round, $boost;
+	printf "==== Round %d (boost %d) ====\r", ++$round, $boost;
+	printf "\n\n" if $part == 1;
 
 	my @groups = grep { $_->{units}>0 } values %groups;
 	for my $g (sort {$a->{army} cmp $b->{army} || $a->{group}<=>$b->{group}}
@@ -167,22 +172,21 @@ while (1) {
 	}
 	last unless 2 == keys %alive;
     }
+    printf "\n";
 
     if ($part == 2) {
 	if ($alive{$boost_army}) {
-	    last;
+	    #last;
+	    last if $boost == $boost_low;
+	    $boost_high = $boost-1;
 	}
-	$boost++;
-	# if ($boost == $boost_high) {
-	#     $boost_low = $boost_high+1;
-	#     $boost_high *= 2;
-	#     $boost = $boost_high;
-	# }
-	# else {
-	#     $boost_low = $boost;
-
-	# }
-
+	else {
+	    $boost_low = $boost+1;
+	    if ($boost_low > $boost_high) {
+		$boost_n *= 2;
+		$boost_high = $boost_n-1;
+	    }
+	}
     }
     else {
 	last;
