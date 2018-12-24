@@ -8,8 +8,13 @@
 use strict;
 
 use Data::Dumper;
-
 $Data::Dumper::Indent = $Data::Dumper::Sortkeys = 1;
+
+use Getopt::Long;
+my $part = 1;
+GetOptions('1|part1' => sub { $part = 1},
+	   '2|part2' => sub { $part = 2},
+	  );
 
 my($line);
 my($max_x,$max_y);
@@ -61,13 +66,18 @@ while (<>) {
 }
 $max_y = $line;
 
-my $ap = 2;
+my $inc_low  = 0;
+my $inc_n    = 1;
+my $inc_high = $inc_n - 1;
+my $ap_inc   = 0;
 
+my $battle = 0;
 battle:
 while (1) {
-    $ap++;
     my %map;
     my %units;
+
+    ++$battle;
 
     for my $y (keys %init_map) {
 	for my $x (keys %{$init_map{$y}}) {
@@ -75,23 +85,26 @@ while (1) {
 	}
     }
 
+    my $ap_inc = int(($inc_low+$inc_high)/2);
+    my $win_by_elves = 1;
+
     for (@init_units) {
 	my $unit = { %$_ };
 	my $x = $unit->{x};
 	my $y = $unit->{y};
 	$map{$y}{$x} = $units{$y}{$x} = $unit;
 	if ($unit->{type} eq 'E') {
-	    $unit->{ap} = $ap;
+	    $unit->{ap} += $ap_inc;
 	}
     }
 
-    printf "Running battle with Elf attack power %d\n", $ap;
+    printf "Running battle %d with Elf attack power %d\n", $battle, 3+$ap_inc;
 
     my $round = 0;
   round:
     while (1) {
 	printf "Round %d\n", $round+1
-	  unless $ap>3;
+	  if $part == 1;
 
 	my @units;
 	my %types;
@@ -210,9 +223,9 @@ while (1) {
 
 		    $steps->{$ny}{$nx}{color} += 8;
 
-		    unless ($ap>3) {
+		    if ($part == 1) {
 			print "\e[H\e[2J";
-			print_map("move $round/$ap",0,0,$max_x,$max_y,\%map,$steps);
+			print_map("move $round/$ap_inc",0,0,$max_x,$max_y,\%map,$steps);
 		    }
 
 		    die "wtf newpos" if $map{$ny}{$nx};
@@ -248,8 +261,9 @@ while (1) {
 		    delete $units{$ty}{$tx};
 		    $types{$target->{type}}--;
 
-		    if ($ap>3 && $target->{type} eq 'E') {
-			next battle;
+		    if ($part == 2 && $target->{type} eq 'E') {
+			$win_by_elves = 0;
+			last round;
 		    }
 		}
 
@@ -258,11 +272,30 @@ while (1) {
 	}
 
 	$round++;
-	#unless ($ap>3) {
+	#if ($part == 1) {
 	    printf "\e[H\e[2J";
-	    print_map("state after $round/$ap",0,0,$max_x,$max_y,\%map)
+	    print_map("state after $round/$ap_inc",0,0,$max_x,$max_y,\%map);
 	#}
 
+    }
+
+    if ($win_by_elves) {
+	#last;
+	if ($ap_inc == $inc_low) {
+	    #last;
+	}
+	else {
+	    $inc_high = $ap_inc-1;
+	    next;
+	}
+    }
+    else {
+	$inc_low = $ap_inc+1;
+	if ($inc_low > $inc_high) {
+	    $inc_n *= 2;
+	    $inc_high = $inc_n-1;
+	}
+	next;
     }
 
     printf "\n";
@@ -270,7 +303,7 @@ while (1) {
     printf "\e[H\e[2J";
     print_map("End of battle",0,0,$max_x,$max_y,\%map);
 
-    printf "Battle ended in round %d\n\n", $round;
+    printf "Battle %d ended in round %d\n\n", $battle, $round;
 
     my $hp_sum = 0;
     for my $y (sort {$a<=>$b} keys %units) {
@@ -282,11 +315,12 @@ while (1) {
 	}
     }
 
-    printf "Solution %d: after round %d with ap %d, %d hp remains = %d\n\n",
-      $ap>3 ? 2 : 1,
-      $round, $ap, $hp_sum, $round * $hp_sum;
+    printf "Solution %d: after round %d%s, %d hp remains = %d\n\n",
+      $part, $round,
+      ($part==2 ? " with ap ".(3+$ap_inc) : ""),
+      $hp_sum, $round * $hp_sum;
 
-    last if $ap>3;
+    last;
 }
 
 exit 0;
@@ -360,7 +394,7 @@ sub find_reach {
     my $x = $me->{x};
     my $y = $me->{y};
     my $reach;
-    my $level = 0;#XXX#
+    my $level = 0;
     $reach->{$y}{$x} = $level++;
     # here we could cut if already seen an enemy closer than level...
     find_reach_recurse($x  ,$y-1,$level,$reach,$state,$map);
