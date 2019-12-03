@@ -29,7 +29,7 @@ while (<>) {
 		++$x;
 		++$wire_length;
 		$grid{$y}{$x}{X} |= $wire_mask;
-		push @{$grid{$y}{$x}{L}}, $wire_length;
+		$grid{$y}{$x}{L}[$.] //= $wire_length;
 	    }
 	}
 	elsif ($s =~ /^U(\d+)$/) {
@@ -37,7 +37,7 @@ while (<>) {
 		++$y;
 		++$wire_length;
 		$grid{$y}{$x}{X} |= $wire_mask;
-		push @{$grid{$y}{$x}{L}}, $wire_length;
+		$grid{$y}{$x}{L}[$.] //= $wire_length;
 	    }
 	}
 	elsif ($s =~ /^L(\d+)$/) {
@@ -45,7 +45,7 @@ while (<>) {
 		--$x;
 		++$wire_length;
 		$grid{$y}{$x}{X} |= $wire_mask;
-		push @{$grid{$y}{$x}{L}}, $wire_length;
+		$grid{$y}{$x}{L}[$.] //= $wire_length;
 	    }
 	}
 	elsif ($s =~ /^D(\d+)$/) {
@@ -53,7 +53,7 @@ while (<>) {
 		--$y;
 		++$wire_length;
 		$grid{$y}{$x}{X} |= $wire_mask;
-		push @{$grid{$y}{$x}{L}}, $wire_length;
+		$grid{$y}{$x}{L}[$.] //= $wire_length;
 	    }
 	}
 	else {
