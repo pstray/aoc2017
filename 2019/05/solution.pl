@@ -20,110 +20,169 @@ while (<>) {
     push @code, split /,/;
 }
 
-$solution1 = join " ", runcode([@code], 1);
+my $program = Intcode->new(@code);
+
+$solution1 = join " ", $program->run(1);
 printf "Solution 1: %s\n", $solution1;
 
-$solution2 = join " ", runcode([@code], 5);
+$solution2 = join " ", $program->run(5);
 
 printf "Solution 2: %s\n", $solution2;
 
-sub runcode {
-    my(#$noun,$verb,
-       $mem,@input) = @_;
-    my $ip = 0;
-    my @output;
-#    $mem[1] = $noun;
-#    $mem->[2] = $verb;
+exit;
+
+package Intcode;
+
+use Data::Dumper;
+
+sub new {
+    my($self,@code) = @_;
+    my $class = ref($self) || $self;
+    $self = bless { code => \@code }, $class;
+    return $self;
+}
+
+sub get_op {
+    my($self) = @_;
+    my $ip = $self->{ip}++;
+    my $op = $self->{mem}[$ip];
+
+    #print "ip = $ip, op = $op\n";
+
+    $self->{op} = $op % 100;
+    $self->{op_mode} = [];
+    $self->{op_pp} = 0;
+
+    $op = int($op/100);
+    while ($op) {
+	push @{$self->{op_mode}}, $op % 10;
+	$op = int($op/10);
+    }
+    return $self->{op};
+}
+
+sub get_addr {
+    my($self) = @_;
+    my $ip = $self->{ip}++;
+    my $addr = $self->{mem}[$ip];
+    return $addr;
+}
+
+sub get_param {
+    my($self) = @_;
+    my $addr = $self->get_addr();
+    my $pp = $self->{op_pp}++;
+    my $mode = $self->{op_mode}[$pp];
+    my $param;
+    #print "  p[$pp]";
+    if ($mode == 0) { # ref
+	#print "  = mem[$addr]";
+	$param = $self->{mem}[$addr];
+    }
+    elsif ($mode == 1) { # immed
+	$param = $addr;
+    }
+    #print " = $param\n";
+    return $param;
+}
+
+sub get_input {
+    my($self) = @_;
+    my $input_p = $self->{input_p}++;
+    my $input;
+    if (@{$self->{input}} > $input_p) {
+	$input = $self->{input}[$input_p];
+    }
+    else {
+	$input = $term->readline("input[$input_p]> ");
+	push @{$self->{input}}, $input;
+    }
+    printf "input: %s\n", $input;
+    return $input;
+}
+
+sub output {
+    my($self,$output) = @_;
+    push @{$self->{output}}, $output;
+    printf "output: %s\n", $output;
+}
+
+
+sub error {
+    my($self) = @_;
+    my $op = $self->{op};
+    my $ip = $self->{ip};
+#    print Dumper $self;
+    warn "Kablam! ip = $ip, op = $op\n";
+
+}
+
+sub run {
+    my($self,@input) = @_;
+    # copy code so we won't brake it
+    $self->{mem} = [ @{$self->{code}} ];
+    $self->{ip} = 0;
+    $self->{output} = [];
+    $self->{input_p} = 0;
+    $self->{input} = [ @input ];
 
     while (1) {
-	my $full_op = $mem->[$ip++];
-	my $op = $full_op % 100;
-	$full_op = int($full_op/100);
-	my @mode;
-	while ($full_op) {
-	    push @mode, $full_op % 10;
-	    $full_op = int($full_op/10);
-	}
+	my $op = $self->get_op();
 
-	if ($op == 1) {
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    my $a3 = $mem->[$ip++];
-	    #printf "$a3 = $a1 + $a2\n";
-	    $mem->[$a3] =
-	      ($mode[0] ? $a1 : $mem->[$a1]) +
-	      ($mode[1] ? $a2 : $mem->[$a2]);
+	if ($op == 1) { # +
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    my $a3 = $self->get_addr();
+	    $self->{mem}[$a3] = $p1 + $p2;
 	}
-	elsif ($op == 2) {
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    my $a3 = $mem->[$ip++];
-	    #printf "$a3 = $a1 * $a2\n";
-	    $mem->[$a3] =
-	      ($mode[0] ? $a1 : $mem->[$a1]) *
-	      ($mode[1] ? $a2 : $mem->[$a2]);
+	elsif ($op == 2) { # *
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    my $a3 = $self->get_addr();
+	    $self->{mem}[$a3] = $p1 * $p2;
 	}
-	elsif ($op == 3) {
-	    my $a1 = $mem->[$ip++];
-	    my $input;
-	    if (@input) {
-		$input = shift @input;
-	    }
-	    else {
-		$input = $term->readline("input> ");
-	    }
-	    printf "input: %s\n", $input;
-	    $mem->[$a1] = $input;
+	elsif ($op == 3) { # input
+	    my $a1 = $self->get_addr();
+	    my $input = $self->get_input();
+	    $self->{mem}[$a1] = $input;
 	}
-	elsif ($op == 4) {
-	    my $a1 = $mem->[$ip++];
-	    push @output, ($mode[0] ? $a1 : $mem->[$a1]);
+	elsif ($op == 4) { # output
+	    my $p1 = $self->get_param();
+	    $self->output($p1);
 	}
 	elsif ($op == 5) { # jump if true
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    if ($mode[0] ? $a1 : $mem->[$a1]) {
-		$ip = $mode[1] ? $a2 : $mem->[$a2];
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    if ($p1) {
+		$self->{ip} = $p2;
 	    }
 	}
 	elsif ($op == 6) { # jump if false
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    unless ($mode[0] ? $a1 : $mem->[$a1]) {
-		$ip = $mode[1] ? $a2 : $mem->[$a2];
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    unless ($p1) {
+		$self->{ip} = $p2;
 	    }
 	}
 	elsif ($op == 7) { # <
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    my $a3 = $mem->[$ip++];
-	    if ( ($mode[0] ? $a1 : $mem->[$a1]) <
-		 ($mode[1] ? $a2 : $mem->[$a2]) ) {
-		$mem->[$a3] = 1;
-	    }
-	    else {
-		$mem->[$a3] = 0;
-	    }
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    my $a3 = $self->get_addr();
+	    $self->{mem}[$a3] = $p1 < $p2 ? 1 : 0;
 	}
 	elsif ($op == 8) { # =
-	    my $a1 = $mem->[$ip++];
-	    my $a2 = $mem->[$ip++];
-	    my $a3 = $mem->[$ip++];
-	    if ( ($mode[0] ? $a1 : $mem->[$a1]) ==
-		 ($mode[1] ? $a2 : $mem->[$a2]) ) {
-		$mem->[$a3] = 1;
-	    }
-	    else {
-		$mem->[$a3] = 0;
-	    }
+	    my $p1 = $self->get_param();
+	    my $p2 = $self->get_param();
+	    my $a3 = $self->get_addr();
+	    $self->{mem}[$a3] = $p1 == $p2 ? 1 : 0;
 	}
 	elsif ($op == 99) {
 	    last;
 	}
 	else {
-	    warn "Kablam! op = $op\n";
+	    $self->error();
 	    return;
 	}
     }
-    return @output;
+    return @{$self->{output}};
 }
