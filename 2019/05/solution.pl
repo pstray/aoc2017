@@ -26,7 +26,6 @@ $solution1 = join " ", $program->run(1);
 printf "Solution 1: %s\n", $solution1;
 
 $solution2 = join " ", $program->run(5);
-
 printf "Solution 2: %s\n", $solution2;
 
 exit;
