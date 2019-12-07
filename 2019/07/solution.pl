@@ -27,36 +27,36 @@ my $ret;
 
 my @max_phase;
 
-my @a = (0..4);
-
-for my $phase_a (@a) {
-    my @b = grep { $_ != $phase_a } @a;
-    for my $phase_b (@b) {
-	my @c = grep { $_ != $phase_b } @b;
-	for my $phase_c (@c) {
-	    my @d = grep { $_ != $phase_c } @c;
-	    for my $phase_d (@d) {
-		my @d = grep { $_ != $phase_d } @d;
-		for my $phase_e (@d) {
-
-		    ($ret) = $program->run($phase_a, 0);
-		    ($ret) = $program->run($phase_b, $ret);
-		    ($ret) = $program->run($phase_c, $ret);
-		    ($ret) = $program->run($phase_d, $ret);
-		    ($ret) = $program->run($phase_e, $ret);
-
-		    if ($ret > $solution1) {
-			$solution1 = $ret;
-			@max_phase =
-			  ($phase_a, $phase_b, $phase_c, $phase_d, $phase_e);
-			printf "new max ($ret) at @max_phase\n";
-		    }
-
-		}
-	    }
+sub permute_run {
+    my($list,$proc,@perm) = @_;
+    if (@$list) {
+	for my $i (0 .. @$list-1) {
+	    my @sub_list = (@{$list}[0..$i-1], @{$list}[$i+1 .. @$list-1]);
+	    permute_run(\@sub_list, $proc, @perm, $list->[$i]);
 	}
     }
+    else {
+	$proc->(@perm);
+    }
 }
+
+permute_run([0..4],
+	    sub {
+		my($phase_a,$phase_b,$phase_c,$phase_d,$phase_e) = @_;
+		($ret) = $program->run($phase_a, 0);
+		($ret) = $program->run($phase_b, $ret);
+		($ret) = $program->run($phase_c, $ret);
+		($ret) = $program->run($phase_d, $ret);
+		($ret) = $program->run($phase_e, $ret);
+
+		if ($ret > $solution1) {
+		    $solution1 = $ret;
+		    @max_phase =
+		      ($phase_a, $phase_b, $phase_c, $phase_d, $phase_e);
+		    printf "new max ($ret) at @max_phase\n";
+		}
+	    }
+	   );
 
 printf "Solution 1: %s\n", $solution1;
 
@@ -72,54 +72,43 @@ my $amp_c = $program->clone();
 my $amp_d = $program->clone();
 my $amp_e = $program->clone();
 
-my @a = (5..9);
-for my $phase_a (@a) {
-    my @b = grep { $_ != $phase_a } @a;
-    for my $phase_b (@b) {
-	my @c = grep { $_ != $phase_b } @b;
-	for my $phase_c (@c) {
-	    my @d = grep { $_ != $phase_c } @c;
-	    for my $phase_d (@d) {
-		my @d = grep { $_ != $phase_d } @d;
-		for my $phase_e (@d) {
+permute_run([5..9],
+	    sub {
+		my($phase_a,$phase_b,$phase_c,$phase_d,$phase_e) = @_;
+		# print "trying...\n";
 
-		    # print "trying...\n";
+		$amp_a->init($phase_a);
+		$amp_b->init($phase_b);
+		$amp_c->init($phase_c);
+		$amp_d->init($phase_d);
+		$amp_e->init($phase_e);
 
-		    $amp_a->init($phase_a);
-		    $amp_b->init($phase_b);
-		    $amp_c->init($phase_c);
-		    $amp_d->init($phase_d);
-		    $amp_e->init($phase_e);
+		$ret = 0;
 
-		    $ret = 0;
-
-		    while (1) {
-			#print "Starting A\n";
-			($ret) = $amp_a->cont($ret);
-			#print "Starting B\n";
-			($ret) = $amp_b->cont($ret);
-			#print "Starting C\n";
-			($ret) = $amp_c->cont($ret);
-			#print "Starting D\n";
-			($ret) = $amp_d->cont($ret);
-			#print "Starting E\n";
-			($ret) = $amp_e->cont($ret);
-			last if $amp_e->finished;
-		    }
-		    # printf "   got $ret\n";
-
-		    if ($ret > $solution2) {
-			$solution2 = $ret;
-			@max_phase =
-			  ($phase_a, $phase_b, $phase_c, $phase_d, $phase_e);
-			printf "new max ($ret) at @max_phase\n";
-		    }
-
+		while (1) {
+		    #print "Starting A\n";
+		    ($ret) = $amp_a->cont($ret);
+		    #print "Starting B\n";
+		    ($ret) = $amp_b->cont($ret);
+		    #print "Starting C\n";
+		    ($ret) = $amp_c->cont($ret);
+		    #print "Starting D\n";
+		    ($ret) = $amp_d->cont($ret);
+		    #print "Starting E\n";
+		    ($ret) = $amp_e->cont($ret);
+		    last if $amp_e->finished;
 		}
+		# printf "   got $ret\n";
+
+		if ($ret > $solution2) {
+		    $solution2 = $ret;
+		    @max_phase =
+		      ($phase_a, $phase_b, $phase_c, $phase_d, $phase_e);
+		    printf "new max ($ret) at @max_phase\n";
+		}
+
 	    }
-	}
-    }
-}
+	   );
 
 printf "Solution 2: %s\n", $solution2;
 
