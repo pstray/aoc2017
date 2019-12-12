@@ -10,67 +10,80 @@ use open ':locale';
 
 use Data::Dumper;
 
-$Data::Dumper::Indent = $Data::Dumper::Sortkeys = 1;
+eval { require "../../lib/common.pl"; };
 
 my $solution1;
 my $solution2;
 
-my @object;
+my @objects;
 
 while (<>) {
     chomp;
     if (/<x=(?<x>-?\d+), y=(?<y>-?\d+), z=(?<z>-?\d+)>/) {
-	push @object, { pos => { %+ }, vel => { x => 0, y => 0, z => 0 } };
+	push @objects, { pos => { %+ }, vel => { x => 0, y => 0, z => 0 } };
     }
     else {
 	die "Kablam! $_\n";
     }
 }
 
-my %seen;
-
 sub state {
+    my($axis,@objects) = @_;
     my @state;
-    for my $o (@_) {
-	push @state, @{$o->{pos}}{qw(x y z)}, @{$o->{vel}}{qw(x y z)},
+    for my $o (@objects) {
+	push @state, $o->{pos}{$axis}, $o->{vel}{$axis};
     }
     return join ",", @state;
 }
 
-$seen{state(@object)}++;
+my %init;
+for my $axis (qw(x y z)) {
+    $init{$axis} = state($axis,@objects);
+}
+
+my %axis_loop;
 
 my $time = 0;
 while ($time < 1000) {
     $time++;
 
-    for my $i (0 .. @object-1) {
-	for my $j ($i+1 .. @object-1) {
+    for my $i (0 .. @objects-1) {
+	for my $j ($i+1 .. @objects-1) {
 	    for my $d (qw(x y z)) {
-		if ($object[$i]{pos}{$d} < $object[$j]{pos}{$d}) {
-		    $object[$i]{vel}{$d}++;
-		    $object[$j]{vel}{$d}--;
-		} elsif ($object[$i]{pos}{$d} > $object[$j]{pos}{$d}) {
-		    $object[$i]{vel}{$d}--;
-		    $object[$j]{vel}{$d}++;
+		if ($objects[$i]{pos}{$d} < $objects[$j]{pos}{$d}) {
+		    $objects[$i]{vel}{$d}++;
+		    $objects[$j]{vel}{$d}--;
+		} elsif ($objects[$i]{pos}{$d} > $objects[$j]{pos}{$d}) {
+		    $objects[$i]{vel}{$d}--;
+		    $objects[$j]{vel}{$d}++;
 		}
 	    }
 	}
     }
 
-    for my $o (@object) {
+    for my $o (@objects) {
 	for my $d (qw(x y z)) {
 	    $o->{pos}{$d} += $o->{vel}{$d};
 	}
     }
 
-    my $state = state(@object);
+    unless ($solution2) {
+	for my $axis (qw(x y z)) {
+	    next if $axis_loop{$axis};
+	    my $state = state($axis,@objects);
+	    next unless $state eq $init{$axis};
+	    $axis_loop{$axis} = $time;
+	}
 
-    if ($seen{$state}++) {
-	$solution2 = $time;
+	if (3 == grep { $_ } values %axis_loop) {
+	    $solution2 = lcm(values %axis_loop);
+	}
+
     }
+
 }
 
-for my $o (@object) {
+for my $o (@objects) {
     $o->{pot} = 0;
     $o->{kin} = 0;
     for my $d (qw(x y z)) {
@@ -86,33 +99,37 @@ printf "Solution 1: %s\n", join " ", $solution1;
 while (!$solution2) {
     $time++;
 
-    for my $i (0 .. @object-1) {
-	for my $j ($i+1 .. @object-1) {
+    for my $i (0 .. @objects-1) {
+	for my $j ($i+1 .. @objects-1) {
 	    for my $d (qw(x y z)) {
-		if ($object[$i]{pos}{$d} < $object[$j]{pos}{$d}) {
-		    $object[$i]{vel}{$d}++;
-		    $object[$j]{vel}{$d}--;
-		} elsif ($object[$i]{pos}{$d} > $object[$j]{pos}{$d}) {
-		    $object[$i]{vel}{$d}--;
-		    $object[$j]{vel}{$d}++;
+		if ($objects[$i]{pos}{$d} < $objects[$j]{pos}{$d}) {
+		    $objects[$i]{vel}{$d}++;
+		    $objects[$j]{vel}{$d}--;
+		} elsif ($objects[$i]{pos}{$d} > $objects[$j]{pos}{$d}) {
+		    $objects[$i]{vel}{$d}--;
+		    $objects[$j]{vel}{$d}++;
 		}
 	    }
 	}
     }
 
-    for my $o (@object) {
+    for my $o (@objects) {
 	for my $d (qw(x y z)) {
 	    $o->{pos}{$d} += $o->{vel}{$d};
 	}
     }
 
-    my $state = state(@object);
-
-    if ($seen{$state}++) {
-	$solution2 = $time;
+    for my $axis (qw(x y z)) {
+	next if $axis_loop{$axis};
+	my $state = state($axis,@objects);
+	next unless $state eq $init{$axis};
+	printf "%s loops at %s\n", $axis, $time;
+	$axis_loop{$axis} = $time;
     }
 
-    printf "t: %d\n", $time unless $time % 1000;
+    if (3 == grep { $_ } values %axis_loop) {
+	$solution2 = lcm(values %axis_loop);
+    }
 }
 
 printf "Solution 2: %s\n", join " ", $solution2;
