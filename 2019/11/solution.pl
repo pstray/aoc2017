@@ -117,19 +117,6 @@ printf "Solution 2: %s\n", $solution2;
 
 exit;
 
-sub permute_run {
-    my($list,$proc,@perm) = @_;
-    if (@$list) {
-	for my $i (0 .. @$list-1) {
-	    my @sub_list = (@{$list}[0..$i-1], @{$list}[$i+1 .. @$list-1]);
-	    permute_run(\@sub_list, $proc, @perm, $list->[$i]);
-	}
-    }
-    else {
-	$proc->(@perm);
-    }
-}
-
 package Intcode;
 
 use Data::Dumper;
