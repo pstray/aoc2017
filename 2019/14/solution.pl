@@ -13,6 +13,7 @@ use POSIX qw(ceil);
 use Data::Dumper;
 
 eval { require "../../lib/common.pl"; };
+warn "$@" if $@;
 
 $Data::Dumper::Sort = 1;
 
@@ -51,112 +52,45 @@ my %have = ();
 my %used = ();
 my %prod = ();
 
-$Data::Dumper::Indent = 0;
-
-while (keys %need) {
-    # printf "%s\n", Data::Dumper->Dump([\%have],[qw(have)]);
-    # printf "%s\n", Data::Dumper->Dump([\%need],[qw(need)]);
-    # printf "\n";
-    for my $e (sort { $need{$b} <=> $need{$a}} keys %need) {
-	my $need = delete $need{$e};
-	if ($e eq 'ORE') {
-	    $have{ORE} -= $need;
-	    $used{ORE} += $need;
-	    next;
-	}
-
-	my($in) = $react{$e}{in};
-	my($out) = $react{$e}{out};
-
-	while ($have{$e} < $need) {
-	    $have{$e} += $out;
-	    $prod{$e} += $out;
-	    for my $i (@$in) {
-		$need{$i->{element}} += $i->{amount};
-	    }
-	}
-	$have{$e} -= $need;
-	$used{$e} += $need;
-    }
-}
-
-$solution1 = $used{ORE};
-
-printf "Solution 1: %s\n", join " ", $solution1;
-
-printf "%s\n", Data::Dumper->Dump([\%prod],[qw(prod)]);
-printf "%s\n", Data::Dumper->Dump([\%used],[qw(used)]);
-printf "%s\n", Data::Dumper->Dump([\%have],[qw(have)]);
-
-my %cc = map { $_ => 1 } keys %have;
-delete $cc{$_} for qw(ORE FUEL);
-
-my %cv;
-
-$have{ORE} += 1000000000000;
-my $skipped = 0;
-
-while (1) {
-
-    for my $e (keys %cc) {
-	unless ($have{$e}) {
-	    delete $cc{$e};
-	    $cv{$e} = $prod{FUEL};
-	    printf "%s loops at %s\n", $e, $cv{$e};
-	}
-    }
-
-    unless ($skipped || keys %cc) {
-	$skipped++;
-	my $skip = lcm(values %cv);
-	my $skip_count = int(1000000000000 / ($solution1 * $skip));
-
-	printf "skip: %s, to: %s\n", $skip, $skip_count;
-
-	%have = ( ORE => 1000000000000 - $solution1 * $skip_count * $skip);
-	$prod{FUEL} = $skip_count * $skip;
-
-	printf "%s\n", Data::Dumper->Dump([\%prod],[qw(prod)]);
-	printf "%s\n", Data::Dumper->Dump([\%used],[qw(used)]);
-	printf "%s\n", Data::Dumper->Dump([\%have],[qw(have)]);
-	printf "\n";
-
-    }
-
-
-    $need{FUEL} += 1;
+sub react {
+    my(%need) = @_;
+    my(%have);
+    local $Data::Dumper::Indent = 0;
 
     while (keys %need) {
-
+	# printf "%s\n", Data::Dumper->Dump([\%have],[qw(have)]);
+	# printf "%s\n", Data::Dumper->Dump([\%need],[qw(need)]);
+	# printf "\n";
 	for my $e (sort { $need{$b} <=> $need{$a}} keys %need) {
-	    my $need = delete $need{$e};
+	    my $amount = delete $need{$e};
 	    if ($e eq 'ORE') {
-		$have{ORE} -= $need;
+		$have{ORE} -= $amount;
 		next;
 	    }
 
 	    my($in) = $react{$e}{in};
 	    my($out) = $react{$e}{out};
 
-	    while ($have{$e} < $need) {
-		$have{$e} += $out;
-		$prod{$e} += $out;
+	    while ($have{$e} < $amount) {
+		my $missing = $amount - $have{$e};
+		my $n = ceil($missing/$out);
+		$have{$e} += $n*$out;
 		for my $i (@$in) {
-		    $need{$i->{element}} += $i->{amount};
+		    $need{$i->{element}} += $n*$i->{amount};
 		}
 	    }
-	    $have{$e} -= $need;
+	    $have{$e} -= $amount;
 	}
     }
-    last if $have{ORE} < 0;
+    return -$have{ORE};
 }
 
-$solution2 = $prod{FUEL};
+$solution1 = react(FUEL => 1);
 
-printf "%s\n", Data::Dumper->Dump([\%prod],[qw(prod)]);
-printf "%s\n", Data::Dumper->Dump([\%used],[qw(used)]);
-printf "%s\n", Data::Dumper->Dump([\%have],[qw(have)]);
-printf "\n";
+printf "Solution 1: %s\n", join " ", $solution1;
 
+$solution2 = bin_search(1, 2*int(1000000000000/$solution1),
+			sub { react(FUEL => $_[0]) }, 1000000000000,
+		       );
 
 printf "Solution 2: %s\n", join " ", $solution2;
