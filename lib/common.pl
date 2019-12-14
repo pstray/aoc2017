@@ -40,3 +40,23 @@ sub permute_run {
 	$proc->(@perm);
     }
 }
+
+sub bin_search {
+    my($low,$high,$sub,$t) = @_;
+    while ($low < $high) {
+	my $mid = int(($low+$high)/2);
+	my $res = $sub->($mid);
+	if ($res < $t) {
+	    $low = $mid+1;
+	}
+	elsif ($res > $t) {
+	    $high = $mid-1;
+	}
+	else {
+	    return $mid;
+	}
+    }
+    return $high;
+}
+
+1;
