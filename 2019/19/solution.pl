@@ -35,12 +35,29 @@ my %tile_map =
   );
 
 sub draw_map {
-    my($self,$info) = @_;
+    my($self,$min_x,$min_y,$max_x,$max_y) = @_;
     printf "\e[H";
-    my $min_y = 0+$self->{__min_y};
-    my $max_y = 0+$self->{__max_y};
-    my $min_x = 0+$self->{__min_x};
-    my $max_x = 0+$self->{__max_x};
+    unless (defined $min_x && defined $min_y &&
+	    defined $max_x && defined $max_y) {
+	unless (defined $self->{__min_y} &&
+		defined $self->{__max_y} &&
+		defined $self->{__min_x} &&
+		defined $self->{__max_x}) {
+	    for my $y (keys %{$self->{__map}}) {
+		$self->{__min_y} = $y if $y < $self->{__min_y};
+		$self->{__max_y} = $y if $y > $self->{__max_y};
+		for my $x (keys %{$self->{__map}{$y}}) {
+		    $self->{__min_x} = $x if $x < $self->{__min_x};
+		    $self->{__max_x} = $x if $x > $self->{__max_x};
+		}
+	    }
+	}
+	$min_x = $self->{__min_x};
+	$min_y = $self->{__min_y};
+	$max_x = $self->{__max_x};
+	$max_y = $self->{__max_y};
+    }
+
     printf "MAP (%d,%d) (%d,%d)\e[K\n", $min_x, $min_y, $max_x, $max_y;
     for my $y ($min_y-1 .. $max_y+1) {
 	for my $x ($min_x-1 .. $max_x+1) {
@@ -70,31 +87,15 @@ sub draw_map {
 	}
 	printf "\e[m\e[K\n";
     }
-    printf "info: %s\e[K\n", $info;
+    printf "info: %s\n", $self->{__info} if exists $self->{__info};
     printf "\e[J";
 
-}
-
-sub next_pos {
-    my($x,$y,$d) = @_;
-    if ($d == 0) { # north
-	$y--;
-    }
-    elsif ($d == 1) { # east
-	$x++;
-    }
-    elsif ($d == 2) { # south
-	$y++;
-    }
-    elsif ($d == 3) { # west
-	$x--;
-    }
-    return ($x,$y);
 }
 
 my $program = Intcode->new(@code);
 
 my $map;
+
 for my $y (0 .. 49) {
     for my $x (0 .. 49) {
 	my($res) = $program->run($x,$y);
@@ -103,30 +104,109 @@ for my $y (0 .. 49) {
     }
 }
 
-$map->{__min_y} = 0;
-$map->{__min_x} = 0;
-$map->{__max_y} = 49;
-$map->{__max_x} = 49;
-
 draw_map($map);
 
 printf "Solution 1: %s\n", $solution1;
 
-for my $y (0 .. 100) {
-    for my $x (0 .. 100) {
-	next if $x < 50 && $y < 50;
-	my($res) = $program->run($x,$y);
-	$solution1 += $res;
-	$map->{__map}{$y}{$x} = $res ? '#' : '.';
+printf "\e[?1049h";
+
+$Data::Dumper::Sortkeys = $Data::Dumper::Indent = 2;
+
+my $min_scan_x = 0;
+my $max_scan_x = 49;
+my $min_scan_y = 0;
+my $max_scan_y = 49;
+
+while (!$solution2) {
+    my %check;
+
+    # printf "checking $min_scan_x .. $max_scan_x @ $max_scan_y\n";
+
+    for my $x ($min_scan_x .. $max_scan_x) {
+	if ($map->{__map}{$max_scan_y}{$x} eq '#') {
+	    for my $o (-2 .. 2) {
+		$check{$max_scan_y}{$x+$o}++;
+		$check{$max_scan_y+1}{$x+$o}++;
+	    }
+	}
     }
+
+    # printf "checking $max_scan_x @ $min_scan_y .. $max_scan_y\n";
+    for my $y ($min_scan_y .. $max_scan_y) {
+	if ($map->{__map}{$y}{$max_scan_y} eq '#') {
+	    for my $o (-1 .. 1) {
+		$check{$y+$o}{$max_scan_x}++;
+		$check{$y+$o}{$max_scan_x+1}++;
+	    }
+	}
+    }
+
+    my %got;
+    for my $y (keys %check) {
+	my @x =  sort { $a <=> $b } keys %{$check{$y}};
+	my $xl = $x[0];
+	my $xr = $x[-1];
+	while ($xl <= $xr) {
+	    unless (exists $map->{__map}{$y}{$xl}) {
+		my($res) = $program->run($xl,$y);
+		$map->{__map}{$y}{$xl} = $res ? '#' : '.';
+	    }
+	    last if $map->{__map}{$y}{$xl} eq '#';
+	    $xl++;
+	}
+	while ($xl <= $xr) {
+	    unless (exists $map->{__map}{$y}{$xr}) {
+		my($res) = $program->run($xr,$y);
+		$map->{__map}{$y}{$xr} = $res ? '#' : '.';
+	    }
+	    last if $map->{__map}{$y}{$xr} eq '#';
+	    $xr--;
+	}
+	for my $x ($xl .. $xr) {
+	    $map->{__map}{$y}{$x} = '#';
+	    $got{$y}{$x}++;
+	}
+    }
+
+    my @y = sort { $a <=> $b } keys %got;
+    $min_scan_y = $y[0];
+    $max_scan_y = $y[-1];
+
+    my @x = sort { $a <=> $b } keys %{$got{$max_scan_y}};
+    $min_scan_x = $x[0];
+    $max_scan_x = $x[-1];
+
+    $map->{__info} = sprintf("(%d,%d)[%1s] - (%d,%d)[%1s]",
+			     $max_scan_x, $min_scan_y,
+			     $map->{__map}{$max_scan_y}{$min_scan_x},
+
+			     $min_scan_x+99, $max_scan_y-99,
+			     $map->{__map}{$max_scan_y-99}{$min_scan_x+99},
+			    );
+
+
+    # \ [min_x,max_y-99] -- [min_x+99,max_y-99]
+    #  \                                       \
+    #   [min_x,max_y]                           \
+
+    if ($map->{__map}{$max_scan_y}{$min_scan_x} eq '#' &&
+	$map->{__map}{$max_scan_y-99}{$min_scan_x+99} eq '#'
+       ) {
+	$solution2 = $min_scan_x * 10000 + $max_scan_y-99;
+	$map->{__info} = $solution2;
+    }
+
+    draw_map($map, $max_scan_x-150, $max_scan_y-55, $max_scan_x, $max_scan_y)
+      unless $max_scan_y % 10
+      ;
+
+    #sleep .1;
+
 }
 
-$map->{__max_y} = 100;
-$map->{__max_x} = 100;
+draw_map($map, $max_scan_x-150, $max_scan_y-55, $max_scan_x, $max_scan_y);
 
-draw_map($map);
-
-#$solution2 = join " ", @ret2;
+printf "\e[?1049l";
 
 printf "Solution 2: %s\n", $solution2;
 
