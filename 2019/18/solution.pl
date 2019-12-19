@@ -162,7 +162,6 @@ sub solve {
     }
 
     unless (@keys) {
-	printf "one $lev!\n";
 	return 0;
     }
 
@@ -195,7 +194,85 @@ sub solve {
 
 $solution1 = solve($data, $data->{__start_x}, $data->{__start_y});
 
+sub solve2 {
+    my($data,$plist,$lev,@opened) = @_;
 
+    my @keys;
+    for my $pi (0 .. @$plist-1) {
+	my $p = $plist->[$pi];
+	my @k = find_keys($data, $p->{x}, $p->{y});
+	for my $k (@k) {
+	    push @$k, $pi;
+	}
+	push @keys, @k;
+    }
+
+    return 0 unless @keys;
+
+    @keys = sort { $a->[3] <=> $b->[3] || $a->[2] cmp $b->[2] } @keys;
+
+    my $state = join(",",
+		     map({ $_->{x}, $_->{y} } @$plist),
+		     map({ $_->[2] } @keys),
+		    );
+
+    if ($solved{$state}) {
+	# printf "seen $state!\n";
+	return $solved{$state};
+    }
+
+    printf "%sK: %s\n", " "x$lev, join ", ", map { $_->[2].'='.$_->[3] } @keys;
+
+    my @steps;
+
+    #print "lev: $lev, state: $state\n";
+    # draw_map($data,"lev: $lev, state: $state");
+
+    for my $k (@keys) {
+	# print Dumper $k;
+	my($x,$y,$key,$depth,$kpos) = @$k;
+	my $door = uc $key;
+	my $dd = $data->{__door}{$door};
+	my($dx,$dy) = $dd ? @$dd : ($x,$y);
+
+	# mark the door and current position as empty
+	local $data->{__map}{$y}{$x} = '.';
+	local $data->{__map}{$dy}{$dx} = '.';
+	local $plist->[$kpos]{x} = $x;
+	local $plist->[$kpos]{y} = $y;
+
+	my $steps = $depth+solve2($data, $plist, $lev+1, @opened, $door);
+	push @steps, $steps;
+    }
+
+    my ($best) = sort { $a <=> $b } @steps;
+
+    $solved{$state} = $best;
+    # printf "%s = %d\n", " "x$lev, $best;
+
+    return $best;
+}
+
+my $x = $data->{__start_x};
+my $y = $data->{__start_y};
+
+$data->{__map}{$y-1}{$x-1} = '@';
+$data->{__map}{$y-1}{$x  } = '#';
+$data->{__map}{$y-1}{$x+1} = '@';
+$data->{__map}{$y  }{$x-1} = '#';
+$data->{__map}{$y  }{$x  } = '#';
+$data->{__map}{$y  }{$x+1} = '#';
+$data->{__map}{$y+1}{$x-1} = '@';
+$data->{__map}{$y+1}{$x  } = '#';
+$data->{__map}{$y+1}{$x+1} = '@';
+
+draw_map($data);
+
+$solution2 = solve2($data, [ { 'x' => $x-1, 'y' => $y-1 },
+			     { 'x' => $x-1, 'y' => $y+1 },
+			     { 'x' => $x+1, 'y' => $y-1 },
+			     { 'x' => $x+1, 'y' => $y+1 },
+			   ]);
 
 printf "Solution 1: %s\n", join " ", $solution1;
 printf "Solution 2: %s\n", join " ", $solution2;
