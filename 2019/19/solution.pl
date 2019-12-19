@@ -126,7 +126,6 @@ $map->{__max_x} = 100;
 
 draw_map($map);
 
-
 #$solution2 = join " ", @ret2;
 
 printf "Solution 2: %s\n", $solution2;
