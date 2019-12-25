@@ -1,0 +1,52 @@
+* map
+
+|                         |                                  | Hot Chocolate Fountain,ES,prime number* | Corridor,W,escape pod=die              |                           |                         |                        |
+|                         | Arcade,E,giant electromagnet=die | Hallway,NSW,mutex*                      | Navigation,S,mug*                      |                           |                         |                        |
+|                         |                                  | Stables,NES,infinite loop=die           | Engineering,NW                         |                           |                         |                        |
+|                         |                                  | <>                                      | Storage,S,loom                         |                           |                         |                        |
+|                         | Hull Breach,ES                   | Crew Quarters,NEW,candy cane            | Kitchen,NEW                            | Warp Drive Maintenance,SW |                         |                        |
+| Observatory,E,asterisk* | Holodeck,NEW,boulder             | Science Lab,W,food ration               | Gift Wrapping Center,E,molten lava=die | Passages,NEW              | Sick Bay,EW,photons=die | Security Checkpoint,nW |
+
+south
+west
+take asterisk
+east
+north
+east
+north
+north
+take mutex
+north
+take prime number
+south
+south
+east
+north
+take mug
+south
+west
+south
+east
+east
+south
+east
+east
+north
+
+
+|              | L | L | L | H | C | H | H | L | H | H | L | L | H | H | H | H | H | H |
+|--------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---|
+| prime number |   |   | X |   | X | X | X | X |   |   | X |   | X |   |   | X |   | X |
+| candy cane   | X |   |   | X |   |   |   |   | X | X |   |   |   | X |   |   | X | X |
+| loom         | X |   |   |   |   |   | X |   |   |   |   |   |   |   | X | X | X | X |
+| asterisk     | X |   |   |   | X | X | X |   |   |   |   | X | X | X | X | X | X | X |
+| food ration  | X |   |   |   |   | X | X |   |   | X | X | X | X | X | X | X | X | X |
+| boulder      | X |   |   |   |   |   |   | X | X | X | X | X | X | X | X | X | X | X |
+| mutex        |   | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X |
+| mug          |   | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X | X |
+
+die: molten lava = melt
+die: photons = easten
+die: infinite loop = infinite loop
+die: electromagnet = can't move
+die: esacpe pod = launced into space
