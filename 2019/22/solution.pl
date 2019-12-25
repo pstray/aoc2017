@@ -24,7 +24,7 @@ my @seq;
 while (<>) {
     chomp;
     if (/^deal with increment (\d+)/) {
-	push @seq, [ deal => $1 ];
+	push @seq, [ inc => $1 ];
     }
     elsif (/^cut ([-\d]+)/) {
 	push @seq, [ cut => $1 ];
@@ -37,8 +37,7 @@ while (<>) {
     }
 }
 
-my $cards = 10007;
-
+# my $cards = 10;
 # my @deck = (0 .. $cards-1);
 # for my $s (@seq) {
 #     my($what,$param) = @$s;
@@ -53,7 +52,7 @@ my $cards = 10007;
 #	    unshift @deck, splice @deck, $param;
 #	}
 #     }
-#     elsif ($what eq 'deal') {
+#     elsif ($what eq 'inc') {
 #	my @new;
 #	my $i = 0;
 #	for my $card (@deck) {
@@ -68,9 +67,9 @@ my $cards = 10007;
 #     }
 # }
 
-
 # $solution1 = join " ", grep { $deck[$_] == 2019 } 0..$cards-1;
 
+my $cards = 10007;
 my $pos = 2019;
 for my $s (@seq) {
     my($what,$param) = @$s;
@@ -81,7 +80,7 @@ for my $s (@seq) {
 	$pos -= $param;
 	$pos %= $cards;
     }
-    elsif ($what eq 'deal') {
+    elsif ($what eq 'inc') {
 	$pos = $pos * $param;
 	$pos %= $cards;
     }
