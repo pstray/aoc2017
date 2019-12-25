@@ -90,9 +90,75 @@ $solution1 = $pos;
 
 printf "Solution 1: %s\n", join " ", $solution1;
 
+sub add {
+    my($a,$b,$m) = @_;
+    return ($a+$b) % $m;
+}
 
+sub mul {
+    my($a,$b,$m) = @_;
+    my $r = 0;
+    while ($b) {
+	if ($b & 1) {
+	    $r = add($r,$a,$m);
+	}
+	$b >>= 1;
+	$a = add($a,$a,$m);
+    }
+    return $r;
+}
 
+sub pow {
+    my($a,$b,$m) = @_;
+    my $r = 1;
+    while ($b) {
+	if ($b & 1) {
+	    $r = mul($r,$a,$m);
+	}
+	$b >>= 1;
+	$a = mul($a,$a,$m);
+    }
+    return $r;
+}
 
+my $cards    = 119315717514047;
+my $shuffles = 101741582076661;
 
+my($inc,$cut) = (1,0);
+for my $s (@seq) {
+    my($what,$param) = @$s;
+    if ($what eq 'new') {
+	$inc = add( 0, -$inc, $cards);
+	$cut = add(-1, -$cut, $cards);
+    }
+    elsif ($what eq 'cut') {
+	# $inc = $inc
+	$cut = add($cut, -$param, $cards);
+    }
+    elsif ($what eq 'inc') {
+	$inc = mul($inc, $param, $cards);
+	$cut = mul($cut, $param, $cards);
+    }
+}
+
+# print "$inc $cut\n";
+# my $pos = add(mul(2019,$inc,$cards),$cut,$cards);
+
+my $x = mul($cut,
+	    pow($inc-1, $cards-2, $cards),
+	    $cards);
+
+# print "$x\n";
+
+$solution2 = add(mul(add($x, 2020, $cards),
+		     pow(pow($inc, $cards-2, $cards),
+			 $shuffles,
+			 $cards
+			),
+		     $cards,
+		    ),
+		 -$x,
+		 $cards,
+		);
 
 printf "Solution 2: %s\n", join " ", $solution2;
