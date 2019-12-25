@@ -1,0 +1,49 @@
+#+TITLE: Modulo math
+#+LANGUAGE: en
+* Shuffling the decks
+
+  After going through the translation, we end up with two constants, the
+  deal with increment multiplier $k$, and the cut deck offset $b$.
+
+  Thus, a card \( c \), ends up at position \( p = k \cdot c +
+  b~(\mathrm{mod}~m) \).
+
+  Repeating this formula \( n \) times:
+
+  \( p_2 = k (k c + b) + b = k^2 c + k b + b \)
+
+  \( p_3 = k p_2 + b = k (k^2 c + k b + b) + b = k^3c + k^2 b + k b + b
+  \)
+
+  \( \cdots \)
+
+  \( p_n = k^n c + k^{n-1} b + k^{n-2} b + \cdots + k^2 b + k b + b \)
+
+  \( p_n = k^n c + b \left( k^{n-1} + \cdots + 1 \right)
+  ~(\mathrm{mod}~m)\)
+
+  When we want to find which card that ended up at \( p_n \), we need to
+  find the inverse function:
+
+  \( c = \frac{p_n-b \left(k^{n-1} + \cdots + 1\right)}{k^n} \)
+
+  \( = \frac{p_n}{k^n} - \frac{b\left(k^{n-1} + \cdots + 1\right)}{k^n}
+  \)
+
+  Multiplying with \( k-1 \) in the last fraction removes the \( \cdots
+  \) part and makes things a bit easier.
+
+  \( = \frac{p_n}{k^n} - \frac{b(k^n-1)}{k^n \left(k-1\right)} \)
+
+  \( = \frac{p_n}{k^n} - \frac{b}{k-1} + \frac{b}{k^n(k-1)} \)
+
+  \( = \frac{p_n+\frac{b}{k-1}}{k^n} - \frac{b}{k-1} ~(\textrm{mod}~m)\)
+
+  Since \( a^m = a~(\mathrm{mod}~m) \), we have \( a^{m-2} \cdot a =
+  1~(\mathrm{mod}~m) \), and thus \( \frac{1}{a} =
+  a^{m-2}~(\mathrm{mod}~m) \).
+
+  Thus:
+
+  \( c = \left(p_n + x\right) \left(k^{m-2}\right)^n - x \) where \( x =
+  b \left(k-1\right)^{m-2} \)
