@@ -11,7 +11,14 @@ today=$(date +%Y/%d)
 mkdir -p $today
 cd $today
 
-emacsclient -a emacs -n  solution
+GLOBIGNORE="*~"
+shopt -s nullglob
+solution=($(ls solution*))
+if [ -z "${solution[0]}" ]; then
+    solution=(solution.pl)
+fi
+
+emacsclient -a emacs -n "${solution[@]}"
 
 echo $"Starting a shell..."
 
