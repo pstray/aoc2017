@@ -23,3 +23,15 @@ emacsclient -a emacs -n "${solution[@]}"
 echo $"Starting a shell..."
 
 bash
+
+echo $"Commiting files..."
+
+git add sample* input*
+git commit -m "Input and samples for $today"
+
+git add solution*
+git commit -m "Solution for $today"
+
+git push
+
+echo $"done."
