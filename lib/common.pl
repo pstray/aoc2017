@@ -1,8 +1,6 @@
 #! /usr/bin/perl
 #
-#    $Id$
-#
-# Copyright (C) 2019 by Peder Stray <peder@ninja.no>
+# Copyright (C) 2019-2020 by Peder Stray <peder@ninja.no>
 #
 
 use strict;
@@ -57,6 +55,24 @@ sub bin_search {
 	}
     }
     return $high;
+}
+
+sub max {
+    my(@list) = @_;
+    my $max = shift @list;
+    for my $val (@list) {
+	$max = $val if $val > $max;
+    }
+    return $max;
+}
+
+sub min {
+    my(@list) = @_;
+    my $min = shift @list;
+    for my $val (@list) {
+	$min = $val if $val < $min;
+    }
+    return $min;
 }
 
 1;
