@@ -15,6 +15,7 @@ GLOBIGNORE="*~"
 shopt -s nullglob
 solution=($(ls solution*))
 if [ -z "${solution[0]}" ]; then
+    cp ../../template.pl solution.pl
     solution=(solution.pl)
 fi
 
