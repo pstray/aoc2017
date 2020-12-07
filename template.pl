@@ -10,7 +10,7 @@ use FindBin;
 eval { require "$FindBin::Bin/../../lib/common.pl"; };
 
 my $solution1 = 0;
-my $solution1 = 0;
+my $solution2 = 0;
 
 # $/ = "";
 while (<>) {
